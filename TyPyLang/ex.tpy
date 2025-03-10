@@ -1,0 +1,8 @@
+# Пример с аннотациями
+def add(a: int, b: int) -> int:
+    return a + b
+
+# Переменная с аннотацией
+x: int = 10
+
+print(add(x, 5))
