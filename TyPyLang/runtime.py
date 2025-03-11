@@ -2,7 +2,7 @@ import inspect
 from enum import Enum
 from typing import Optional  #have to realise
 
-# Регистрация readonly-переменных
+# Регистрация readonly-переменных (const)
 readonly_registry = set()
 
 class ReadonlyDict(dict):
@@ -45,12 +45,32 @@ def type_checked(func):
         return result
     return wrapper
 
+import inspect
+
 def implements(*interfaces):
     def decorator(cls):
-        for interface in interfaces:
-            for attr in dir(interface):
-                if not attr.startswith("__"):
-                    if not hasattr(cls, attr):
-                        raise TypeError(f"Класс {cls.__name__} не реализует требуемый атрибут '{attr}' интерфейса {interface.__name__}")
+        orig_init = getattr(cls, '__init__', None)
+        if not orig_init:
+            raise TypeError(f"Класс {cls.__name__} должен иметь метод __init__ для проверки интерфейсов.")
+
+        def new_init(self, *args, **kwargs):
+            # Вызываем оригинальный конструктор
+            orig_init(self, *args, **kwargs)
+            # Проверяем каждый интерфейс
+            for interface in interfaces:
+                required_attrs = getattr(interface, '__annotations__', {})
+                for attr in required_attrs:
+                    if not hasattr(self, attr):
+                        raise TypeError(
+                            f"Объект класса {cls.__name__} не реализует требуемый атрибут '{attr}' интерфейса {interface.__name__}"
+                        )
+                # Проверяем, что у экземпляра есть все методы, объявленные в интерфейсе
+                interface_methods = inspect.getmembers(interface, predicate=inspect.isfunction)
+                for name, method in interface_methods:
+                    if not hasattr(self, name) or not callable(getattr(self, name)):
+                        raise TypeError(
+                            f"Объект класса {cls.__name__} не реализует требуемый метод '{name}' интерфейса {interface.__name__}"
+                        )
+        cls.__init__ = new_init
         return cls
     return decorator

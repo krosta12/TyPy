@@ -1,42 +1,39 @@
 import re
 
 def preprocess_source(source):
-    # use strict создание переменной флага и удаления из кода как мусор
+    # Если встречается директива "use strict", удаляем
+    source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
     if "use strict" in source:
-        source = re.sub(r'^\s*use strict\s*$', '', source, flags=re.MULTILINE)
         source = "__strict_mode__ = True\n" + source
 
-    # Удаение видимой типизации
-    source = re.sub(r'(def\s+\w+)<[^>]+>\s*\(', lambda m: m.group(1) + "(", source)
+    # Удаляем параметры обобщений в определениях функций
+    source = re.sub(r'^(?!\s*#)(def\s+\w+)<[^>]+>\s*\(', lambda m: m.group(1) + "(", source, flags=re.MULTILINE)
 
-    # удалекние типизации по инициализации
-    source = re.sub(r'^\s*type\s+(\w+)\s*=\s*(.+)$', r'\1 = \2', source, flags=re.MULTILINE)
+    # Обработка type alias: преобразуем "type Alias = SomeType"
+    source = re.sub(r'^(?!\s*#)\s*type\s+(\w+)\s*=\s*(.+)$', r'\1 = \2', source, flags=re.MULTILINE)
 
-    # Обработка optional: переменная делает или null или underfined
-    source = re.sub(r'(\w+)\?\s*:\s*([^\s=]+)', r'\1: Optional[\2]', source)
+    # Обработка optional: заменяем "variable?: Type" на "variable: Optional[Type]"
+    source = re.sub(r'^(?!\s*#)(\w+)\?\s*:\s*([^\s=]+)', r'\1: Optional[\2]', source, flags=re.MULTILINE)
 
-    # Обработка readonly-переменных: const 
+    # Обработка readonly-переменных: "readonly x: int = expr" => "x: int = __readonly_check__(...)"
     source = re.sub(
-        r'^\s*readonly\s+(\w+)\s*:\s*([^=]+)=\s*(.+)$',
+        r'^(?!\s*#)\s*readonly\s+(\w+)\s*:\s*([^=]+)=\s*(.+)$',
         lambda m: f"{m.group(1)}: {m.group(2)}= __readonly_check__(\"{m.group(1)}\", {m.group(3)}, {m.group(2).strip()})",
         source, flags=re.MULTILINE
     )
 
-    # Видимые методы для будующей инкапсуляции
-    # private: "__var"
-    source = re.sub(r'^(\s*)private\s+(\w+)', lambda m: f"{m.group(1)}__{m.group(2)}", source, flags=re.MULTILINE)
-    # protected: "_var"
-    source = re.sub(r'^(\s*)protected\s+(\w+)', lambda m: f"{m.group(1)}_{m.group(2)}", source, flags=re.MULTILINE)
-    # public: default
-    source = re.sub(r'^(\s*)public\s+(\w+)', lambda m: f"{m.group(1)}{m.group(2)}", source, flags=re.MULTILINE)
+    # Обработка модификаторов доступа (private, protected, public)
+    source = re.sub(r'^(?!\s*#)(\s*)private\s+(\w+)', lambda m: f"{m.group(1)}__{m.group(2)}", source, flags=re.MULTILINE)
+    source = re.sub(r'^(?!\s*#)(\s*)protected\s+(\w+)', lambda m: f"{m.group(1)}_{m.group(2)}", source, flags=re.MULTILINE)
+    source = re.sub(r'^(?!\s*#)(\s*)public\s+(\w+)', lambda m: f"{m.group(1)}{m.group(2)}", source, flags=re.MULTILINE)
 
-    # Обработка интерфейсов: создание флага интерфейса
+    # Обработка интерфейсов: заменяем "interface Name:" на определение класса с меткой __is_interface__
     def interface_repl(match):
         name = match.group(1)
         return f"class {name}:\n    __is_interface__ = True"
-    source = re.sub(r'^interface\s+(\w+)\s*:', interface_repl, source, flags=re.MULTILINE)
+    source = re.sub(r'^(?!\s*#)interface\s+(\w+)\s*:', interface_repl, source, flags=re.MULTILINE)
 
-    # Обработка implements: добавляем декораторы @implements для интерфеса 
+    # Обработка implements: добавляем декораторы @implements(...)
     def implements_repl(match):
         indent = match.group(1)
         class_name = match.group(2)
@@ -44,9 +41,9 @@ def preprocess_source(source):
         interfaces_list = [iface.strip() for iface in interfaces.split(',')]
         decorators = "".join([f"{indent}@implements({iface})\n" for iface in interfaces_list])
         return f"{decorators}{indent}class {class_name}:"
-    source = re.sub(r'^(\s*)class\s+(\w+)\s+implements\s+([\w\s,]+)\s*:', implements_repl, source, flags=re.MULTILINE)
+    source = re.sub(r'^(?!\s*#)(\s*)class\s+(\w+)\s+implements\s+([\w\s,]+)\s*:', implements_repl, source, flags=re.MULTILINE)
 
-    # Enum: преобразование в класс
+    # Обработка перечислений (enum): преобразуем "enum Color:" в определение класса на базе Enum
     def enum_repl(match):
         enum_name = match.group(1)
         body = match.group(2)
@@ -63,9 +60,8 @@ def preprocess_source(source):
             value += 1
         enum_body = "\n".join(enum_lines)
         return f"from enum import Enum\nclass {enum_name}(Enum):\n{enum_body}"
-    source = re.sub(r'enum\s+(\w+)\s*:\s*(.*?)\n(?=\S)', enum_repl, source, flags=re.DOTALL)
+    source = re.sub(r'^(?!\s*#)enum\s+(\w+)\s*:\s*(.*?)\n(?=\S)', enum_repl, source, flags=re.DOTALL | re.MULTILINE)
 
-    # изменение типа данных
-    source = re.sub(r'(\S+)\s+as\s+(\w+)', r'__assert_type__(\1, \2)', source)
-    
+    # Обработка приведения типов (assertion): "expr as Type" => "__assert_type__(expr, Type)"
+    source = re.sub(r'(?<!#)(\S+)\s+as\s+(\w+)', r'__assert_type__(\1, \2)', source)    
     return source
