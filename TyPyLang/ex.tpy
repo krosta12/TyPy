@@ -1,8 +1,43 @@
-# Пример с аннотациями
-def add(a: int, b: int) -> int:
-    return a + b
+use strict
 
-# Переменная с аннотацией
-x: int = 10
+# Пример type alias
+type MyInt = int
 
-print(add(x, 5))
+# Пример кастомного enum
+enum Color:
+    Red,
+    Green,
+    Blue
+
+# Пример TS-TPY интерфейса
+interface IPoint:
+    x: int
+    y: int
+
+# имплементацияонная логика
+class Point implements IPoint:
+    private x: int
+    private y: int
+
+    def __init__(self, x: int, y: int) -> None:
+        self.__x = x
+        self.__y = y
+
+    def get_x(self) -> int:
+        return self.__x
+
+    def get_y(self) -> int:
+        return self.__y
+
+# Пример readonly и optional
+readonly count: int = 5
+value?: int = 10
+
+# Пример приведения типа
+a = 123 as int
+
+print("Enum Color.Green =", Color.Green)
+p = Point(10, 20)
+print("Point:", p.get_x(), p.get_y())
+print("Readonly count =", count)
+print("Optional value =", value)
