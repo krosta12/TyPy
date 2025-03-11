@@ -1,0 +1,14 @@
+{
+  "scopeName": "source.tpy",
+  "name": "TyPy",
+  "patterns": [
+    {
+      "include": "source.python"
+    },
+    {
+      "name": "keyword.control.tpy",
+      "match": "\\b(interface|implements|readonly|enum|type)\\b"
+    }
+  ],
+  "repository": {}
+}

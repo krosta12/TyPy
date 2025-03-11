@@ -1,0 +1,25 @@
+{
+  "name": "tpy",
+  "displayName": "typy-lang",
+  "description": "Syntax highlighting for .tpy files",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "tpy",
+      "aliases": ["TyPy", "tpy"],
+      "extensions": [".tpy"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "tpy",
+      "scopeName": "source.tpy",
+      "path": "./syntaxes/tpy.tmLanguage.json"
+    }]
+  }
+}
