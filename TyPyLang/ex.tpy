@@ -43,22 +43,50 @@
 #print("Optional value =", value)
 
 
+#MUST ADD EXTENDS FOR INTERFACES
 
+#INTERFACES TEST1
+print(f"__________Test 1__________\n__________interface must work with base def__________")
 use strict
 
-interface Vector:
+interface Point:
     x: int
     y: int
-    #create_var_error: int passed
-    def get_vector(self): pass
-    #def create_compile_error(self): pass passed
-    
 
-class Point implements Vector:
-    def __init__(self,x,y):
+class Vector implements Point:
+    def __init__(self, x,y) -> None:
         self.x = x
-        self.y =y 
-    def get_vector(self): 
-        print("hihi")
+        self.y = y
 
-p = Point(1, 2)
+    def get_vector(self, axis) -> list:
+        if axis == 0: return [self.x,self.y]
+        elif axis == 1: return [self.y,self.x]
+        else: return [self.x,self.y]
+
+vector_test1 = Vector(1,2)
+
+print(vector_test1.get_vector(0))
+print(vector_test1.get_vector(1))
+
+
+#INTERFACES TEST 2 
+print(f"__________Test 2__________\n __________interface must work with base def. And must be reweitable__________")
+
+interface Point:
+    x_cord: int
+    y_cord: int
+    def print_point(self): pass
+
+class Vector implements Point:
+    def __init__(self, x, y):
+        self.x_cord = x
+        self.y_cord = y
+    def print_point(self):
+        print(tuple([self.x_cord, self.y_cord]))
+
+vector_test2 = Vector(1,2)
+
+vector_test2.print_point()
+
+#INTERFACES TEST 3
+print(f"__________Test 3__________\n __________interface must work with base def. And must be reweitable__________")
