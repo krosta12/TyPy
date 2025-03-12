@@ -11,11 +11,11 @@ from runtime import (
 
 def main():
     if len(sys.argv) < 2:
-        print("Использование: python main.py <файл.tpy>")
+        print("Использование: python main.py <файл.tpy>") #must be a throw
         sys.exit(1)
     file_path = sys.argv[1]
     if not file_path.endswith('.tpy'):
-        print("Ошибка: файл должен иметь расширение .tpy")
+        print("Ошибка: файл должен иметь расширение .tpy") #must be a throw
         sys.exit(1)
     with open(file_path, 'r', encoding='utf-8') as f:
         source = f.read()

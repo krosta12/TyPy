@@ -1,7 +1,7 @@
 import ast
 
 class TyPyTransformer(ast.NodeTransformer):
-    def visit_FunctionDef(self, node):
+    def visit_FunctionDef(self, node): #PROBLEM
         # Если функция имеет аннотации параметров type_checked
         has_annotation = (node.returns is not None) or any(arg.annotation is not None for arg in node.args.args)
         if has_annotation:
@@ -10,7 +10,7 @@ class TyPyTransformer(ast.NodeTransformer):
         self.generic_visit(node)
         return node
 
-    def visit_AnnAssign(self, node):
+    def visit_AnnAssign(self, node):  #PROBLEM
         # Преобразуем присваивание с аннотацией
         if node.value is not None and isinstance(node.target, ast.Name):
             var_name = node.target.id

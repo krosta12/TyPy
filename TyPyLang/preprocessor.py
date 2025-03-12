@@ -1,5 +1,19 @@
 import re
 
+#queue
+#use strict
+# def -> type => def
+#type string -> string
+#optional replacement
+#const readonly vars
+#private
+#protected
+#public
+#inteface
+#implements
+#enum
+#type as type
+
 def preprocess_source(source):
     # Если встречается директива "use strict", удаляем
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
@@ -28,13 +42,13 @@ def preprocess_source(source):
     source = re.sub(r'^(?!\s*#)(\s*)public\s+(\w+)', lambda m: f"{m.group(1)}{m.group(2)}", source, flags=re.MULTILINE)
 
     # Обработка интерфейсов: заменяем "interface Name:" на определение класса с меткой __is_interface__
-    def interface_repl(match):
+    def interface_repl(match): #PROBLEM?
         name = match.group(1)
         return f"class {name}:\n    __is_interface__ = True"
     source = re.sub(r'^(?!\s*#)interface\s+(\w+)\s*:', interface_repl, source, flags=re.MULTILINE)
 
     # Обработка implements: добавляем декораторы @implements(...)
-    def implements_repl(match):
+    def implements_repl(match): #PROBLEM?
         indent = match.group(1)
         class_name = match.group(2)
         interfaces = match.group(3)
@@ -44,7 +58,7 @@ def preprocess_source(source):
     source = re.sub(r'^(?!\s*#)(\s*)class\s+(\w+)\s+implements\s+([\w\s,]+)\s*:', implements_repl, source, flags=re.MULTILINE)
 
     # Обработка перечислений (enum): преобразуем "enum Color:" в определение класса на базе Enum
-    def enum_repl(match):
+    def enum_repl(match): #PROBLEM?
         enum_name = match.group(1)
         body = match.group(2)
         lines = body.splitlines()
