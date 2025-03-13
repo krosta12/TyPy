@@ -46,7 +46,7 @@
 #MUST ADD EXTENDS FOR INTERFACES
 
 #INTERFACES TEST1
-print(f"__________Test 1__________\n__________interface must work with base def__________")
+print(f"\n\n\n\n__________Test 1__________\n__________interface must work with base def__________")
 use strict
 
 interface Point:
@@ -70,7 +70,7 @@ print(vector_test1.get_vector(1))
 
 
 #INTERFACES TEST 2 
-print(f"__________Test 2__________\n __________interface must work with base def. And must be reweitable__________")
+print(f"\n\n\n__________Test 2__________\n __________interface must work with base def. And must be reweitable__________")
 
 interface Point:
     x_cord: int
@@ -89,4 +89,51 @@ vector_test2 = Vector(1,2)
 vector_test2.print_point()
 
 #INTERFACES TEST 3
-print(f"__________Test 3__________\n __________interface must work with base def. And must be reweitable__________")
+print(f"\n\n\n__________Test 3__________\n __________interface mustnt work without main vars or defs__________")
+
+interface Point:
+    x_cord: int
+    y_cord: int
+    def print_point(self): pass
+    #hih: str 
+
+class Vector implements Point:
+    def __init__(self, x, y):
+        self.x_cord = x
+        self.y_cord = y
+    def print_point(self):
+        print(tuple([self.x_cord, self.y_cord]))
+
+vector_test2 = Vector(1,2)
+
+vector_test2.print_point()
+
+ #PASSED
+
+print(f"\n\n\n__________Test 3__________\n __________interface can be extended by secod interface__________")
+
+#interface X:
+#    x: int
+#interface Y:
+#    y : int
+#
+#interface Point4(X): #extends or implement doent work
+#    def get_point(self): pass
+
+#ERROR MAY FIX IT
+
+print(f"\n\n\n__________Test 4__________\n __________Class can contain multi interface implementation__________")
+
+
+interface X:
+    x : int
+interface Y:
+    y : int
+
+class Vector4 implements X, Y:
+    def __init__(self,x,y):
+        self.x = x
+        self.y = y
+
+
+test4 = Vector4(1,2)
