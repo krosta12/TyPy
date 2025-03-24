@@ -1,44 +1,54 @@
 import re
 
 def preprocess_source(source):
-    """
-    начать расписывать подробностьи коджа в таком формате как было снизу
-    """
     strict_present = bool(re.search(r'^(?!\s*#)\s*use strict\s*$', source, flags=re.MULTILINE))
-    # Если встречается директива "use strict", удаляем
-
+    """
+    Если встречается директива "use strict", удаляем
+    """
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
     if strict_present:
         source = "__strict_mode__ = True\n" + source
 
+    """
+    Проверяем правильность структуры каждлого кстомного елемента
+    """
     if re.search(r"interface\s+\w+\s+def", source):
         raise SyntaxError("Invalid interface declaration syntax")
 
     if re.search(r"enum\s+\w+\s+\w+", source):
         raise SyntaxError("Invalid enum declaration syntax")
-
-    # Удаляем параметры обобщений в определениях функций
+    """
+    Удаляем параметры обобщений в определениях функций
+    """
     source = re.sub(r'^(?!\s*#)(def\s+\w+)<[^>]+>\s*\(', lambda m: m.group(1) + "(", source, flags=re.MULTILINE)
-
-    # Обработка type alias: преобразуем "type Alias = SomeType"
+    """
+    Обработка type alias: преобразуем "type Alias = SomeType
+    """
     source = re.sub(r'^(?!\s*#)\s*type\s+(\w+)\s*=\s*(.+)$', r'\1 = \2', source, flags=re.MULTILINE)
-
-    # Обработка optional: заменяем "variable?: Type" на "variable: Optional[Type]"
+    """
+    Обработка optional: заменяем "variable?: Type" на "variable: Optional[Type]"
+    """
     source = re.sub(r'^(?!\s*#)(\w+)\?\s*:\s*([^\s=]+)', r'\1: Optional[\2]', source, flags=re.MULTILINE)
 
-    # Обработка readonly-переменных: "readonly x: int = expr" => "x: int = __readonly_check__(...)"
+    """
+    Обработка readonly-переменных: "readonly x: int = expr" => "x: int = __readonly_check__(...)"
+    """
     source = re.sub(
         r'^(?!\s*#)\s*readonly\s+(\w+)\s*:\s*([^=]+)=\s*(.+)$',
         lambda m: f"{m.group(1)}: {m.group(2)}= __readonly_check__(\"{m.group(1)}\", {m.group(3)}, {m.group(2).strip()})",
         source, flags=re.MULTILINE
     )
 
-    # Обработка модификаторов доступа (private, protected, public)
+    """
+    Обработка модификаторов доступа (private, protected, public)
+    """
     source = re.sub(r'^(?!\s*#)(\s*)private\s+(\w+)', lambda m: f"{m.group(1)}__{m.group(2)}", source, flags=re.MULTILINE)
     source = re.sub(r'^(?!\s*#)(\s*)protected\s+(\w+)', lambda m: f"{m.group(1)}_{m.group(2)}", source, flags=re.MULTILINE)
     source = re.sub(r'^(?!\s*#)(\s*)public\s+(\w+)', lambda m: f"{m.group(1)}{m.group(2)}", source, flags=re.MULTILINE)
 
-    # Обработка интерфейсов: заменяем "interface Name:" на определение класса с меткой __is_interface__
+    """
+    Обработка интерфейсов: заменяем "interface Name:" на определение класса с меткой __is_interface__
+    """
     def interface_repl(match):
         name = match.group(1)
         extends_part = match.group(2)
@@ -50,7 +60,9 @@ def preprocess_source(source):
 
     source = re.sub(r'^\s*interface\s+(\w+)(?:\s+extends\s+([\w\s,]+))?:\s*', interface_repl, source, flags=re.MULTILINE)
 
-    # Обработка implements: добавляем декораторы @implements(...)
+    """
+    Обработка implements: добавляем декораторы @implements(...)
+    """
     def implements_repl(match):
         indent = match.group(1)
         class_name = match.group(2)
@@ -60,7 +72,9 @@ def preprocess_source(source):
         return f"{decorators}{indent}class {class_name}:"
     source = re.sub(r'^(?!\s*#)(\s*)class\s+(\w+)\s+implements\s+([\w\s,]+)\s*:', implements_repl, source, flags=re.MULTILINE)
 
-    # Обработка перечислений (enum): преобразуем "enum Color:" в определение класса на базе Enum
+    """
+    Обработка перечислений (enum): преобразуем "enum Color:" в определение класса на базе Enum
+    """
     def enum_repl(match):
         enum_name = match.group(1)
         body = match.group(2)
@@ -85,10 +99,12 @@ def preprocess_source(source):
 
     source = re.sub(r'^\s*enum\s+(\w+):\s*\n((?:\s+.+\n*)+)', enum_repl, source, flags=re.MULTILINE)
 
-    # Обработка приведения типов (assertion): "expr as Type" -> "__assert_type__(expr, Type)"
+    """
+    Обработка приведения типов (assertion): "expr as Type" -> "__assert_type__(expr, Type)"
+    """
     source = re.sub(r'(?<!#)(\S+)\s+as\s+(\w+)', r'__assert_type__(\1, \2)', source)
     
-    # Проверка корректности определения методов в интерфейсах
+    """Проверка корректности определения методов в интерфейсах"""
     source = check_interface_methods(source)
     
     return source

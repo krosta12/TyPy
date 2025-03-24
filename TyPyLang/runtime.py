@@ -45,7 +45,9 @@ def type_checked(func):
         return result
     return wrapper
 
-# Собираем требования интерфейса (атрибуты и методы) с учётом наследования
+"""
+Собираем требования интерфейса (атрибуты и методы) с учётом наследования
+"""
 def gather_interface_requirements(interface):
     req_attrs = {}
     req_methods = {}

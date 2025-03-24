@@ -9,22 +9,32 @@ from runtime import (
     implements, ReadonlyDict
 )
 
+"""Главный исполнитель преобразования и запуска кода"""
+
 def main():
+
     if len(sys.argv) < 2:
         print("Использование: python main.py <файл.tpy>") #must be a throw
         sys.exit(1)
+
     file_path = sys.argv[1]
+
     if not file_path.endswith('.tpy'):
         print("Ошибка: файл должен иметь расширение .tpy") #must be a throw
         sys.exit(1)
+    
+    """Начать чтение из файла и записать всё в оперативную память"""
     with open(file_path, 'r', encoding='utf-8') as f:
         source = f.read()
     
-    # AST для переработки сахара из кода
+    """Перерабьотка кода в AST для работы с синтаксисами"""
     tree = parse_source(source, filename=file_path)
     code = compile(tree, filename=file_path, mode='exec')
     
-    # Окружение для ратайм
+    """
+    Создание окружения при помощи ReadonlyDict
+    передача функций в окружение
+    """
     env = ReadonlyDict({
         'type_checked': type_checked,
         '__type_check__': __type_check__,
@@ -35,6 +45,8 @@ def main():
         '__name__': '__main__',
         'Optional': Optional,
     })
+
+    """запуск кастомного окружения"""
     exec(code, env)
 
 if __name__ == '__main__':
