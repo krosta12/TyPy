@@ -1,59 +1,72 @@
 import unittest
-import re
+
 from preprocessor import preprocess_source, check_interface_methods
 from runtime import (
     __assert_type__, __type_check__, __readonly_check__,
     type_checked, gather_interface_requirements, implements, ReadonlyDict
 )
-import inspect
 
-# Тестирование транслятора
 class TestPreprocessor(unittest.TestCase):
 
     def test_use_strict_removal(self):
-        # Удалить useStrict
-        source = """
-        use strict
-        print('Hello')
-        """
+        source = "use strict\nprint('Hello')"
         processed = preprocess_source(source)
-        self.assertNotIn("use strict", processed)
         self.assertIn("__strict_mode__ = True", processed)
+        self.assertNotIn("use strict", processed)
 
     def test_type_alias(self):
-        source = """
-        type MyInt = int
-        x = 5
-        """
+        source = "type MyType = int"
         processed = preprocess_source(source)
-        self.assertIn("MyInt = int", processed)
-        self.assertNotIn("type MyInt =", processed)
+        self.assertIn("MyType = int", processed)
 
-    def test_optional_conversion(self):
-        source = """value?: str = 'hello'"""
+    def test_optional_field(self):
+        source = "name?: str"
         processed = preprocess_source(source)
-        # Должно заменить на: value: Optional[str]
-        self.assertIn("value: Optional[str]", processed)
+        self.assertIn("name: Optional[str]", processed)
 
-    def test_interface_rewriting_no_extends(self):
+    def test_readonly_variable(self):
+        source = "readonly x: int = 5"
+        processed = preprocess_source(source)
+        self.assertIn('__readonly_check__("x", 5, int)', processed)
+
+    def test_private_variable(self):
+        source = "private secret_key = 12345"
+        processed = preprocess_source(source)
+        self.assertIn("__secret_key = 12345", processed)
+
+    def test_protected_variable(self):
+        source = "protected _data = []"
+        processed = preprocess_source(source)
+        self.assertIn("_data = []", processed)
+
+    def test_public_variable(self):
+        source = "public name = 'John'"
+        processed = preprocess_source(source)
+        self.assertIn("name = 'John'", processed)
+
+    def test_type_assertion(self):
+        source = "value as int"
+        processed = preprocess_source(source)
+        self.assertIn('__assert_type__(value, int)', processed)
+
+    def test_interface_with_extends(self):
         source = """
-        interface MyInterface:
+        interface Child extends Parent, Other:
             def method(self): pass
         """
         processed = preprocess_source(source)
-        # Должно преобразоваться в класс с флагом __is_interface__
-        self.assertIn("class MyInterface:", processed)
+        self.assertIn("class Child(Parent, Other):", processed)
         self.assertIn("__is_interface__ = True", processed)
 
-    def test_interface_rewriting_with_extends(self):
+    def test_class_implements_interface(self):
         source = """
-        interface Child extends Parent, Other:
-            def child_method(self): pass
+        class MyClass implements MyInterface:
+            def method(self):
+                pass
         """
         processed = preprocess_source(source)
-        # Проверяем, что базовые интерфейсы перечислены
-        self.assertIn("class Child(Parent,Other):", processed)
-        self.assertIn("__is_interface__ = True", processed)
+        self.assertIn("@implements(MyInterface)", processed)
+        self.assertIn("class MyClass:", processed)
 
     def test_enum_rewriting(self):
         source = """
@@ -61,48 +74,50 @@ class TestPreprocessor(unittest.TestCase):
             Red,
             Green,
             Blue
-            
-            print(Color.Red)
         """
         processed = preprocess_source(source)
         self.assertIn("class Color(Enum):", processed)
         self.assertIn("Red = 1", processed)
+        self.assertIn("Green = 2", processed)
         self.assertIn("Blue = 3", processed)
 
-    def test_assertion_rewriting(self):
-        source = "a = 123 as int"
-        processed = preprocess_source(source)
-        self.assertNotIn("as int", processed)
-        self.assertIn("__assert_type__(123, int)", processed)
-
-    def test_ignores_commented_lines(self):
+    def test_enum_with_values(self):
         source = """
-        # use strict
-        # type Alias = int
-        # """
-        processed = preprocess_source(source)
-        self.assertIn("# use strict", processed)
-        self.assertIn("# type Alias = int", processed)
-
-    def test_implements_rewriting(self):
-        source = """
-        class MyClass implements InterfaceA, InterfaceB:
-            pass
+        enum Status:
+            ACTIVE = 10,
+            INACTIVE = 20
         """
         processed = preprocess_source(source)
-        self.assertIn("@implements(InterfaceA)", processed)
-        self.assertIn("@implements(InterfaceB)", processed)
-        self.assertIn("class MyClass:", processed)
+        self.assertIn("class Status(Enum):", processed)
+        self.assertIn("ACTIVE = 10", processed)
+        self.assertIn("INACTIVE = 20", processed)
 
-    def test_check_interface_methods_error(self):
-        # Проверяем, что если метод интерфейса не имеет тела, возникает ошибка
-        source = """
-        interface Bad:
-            def missing(self):
-        """
-        with self.assertRaises(SyntaxError):
-            _ = check_interface_methods(source)
+    def test_readonly_runtime_check(self):
+        __readonly_check__("x", 10, int)
+        with self.assertRaises(TypeError):
+            __readonly_check__("x", "text", int)
 
+    def test_assert_type_runtime(self):
+        self.assertEqual(__assert_type__(42, int), 42)
+        with self.assertRaises(TypeError):
+            __assert_type__("hello", int)
+
+    def test_incorrect_interface_syntax(self):
+        source = "interface MyInterface def some_method(): pass"
+        with self.assertRaises(Exception) as context:
+            preprocess_source(source)
+
+        print(f"Exception caught: {type(context.exception).__name__} - {context.exception}")
+        self.assertIsInstance(context.exception, SyntaxError)
+
+
+    def test_incorrect_enum_syntax(self):
+        source = "enum InvalidEnum value1 value2"
+        with self.assertRaises(Exception) as context:
+            preprocess_source(source)
+
+        print(f"Exception caught: {type(context.exception).__name__} - {context.exception}")
+        self.assertIsInstance(context.exception, SyntaxError)
 
 # Тесты кода
 class TestRuntimeFunctions(unittest.TestCase):

@@ -1,10 +1,21 @@
 import re
 
 def preprocess_source(source):
+    """
+    начать расписывать подробностьи коджа в таком формате как было снизу
+    """
+    strict_present = bool(re.search(r'^(?!\s*#)\s*use strict\s*$', source, flags=re.MULTILINE))
     # Если встречается директива "use strict", удаляем
+
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
-    if "use strict" in source:
+    if strict_present:
         source = "__strict_mode__ = True\n" + source
+
+    if re.search(r"interface\s+\w+\s+def", source):
+        raise SyntaxError("Invalid interface declaration syntax")
+
+    if re.search(r"enum\s+\w+\s+\w+", source):
+        raise SyntaxError("Invalid enum declaration syntax")
 
     # Удаляем параметры обобщений в определениях функций
     source = re.sub(r'^(?!\s*#)(def\s+\w+)<[^>]+>\s*\(', lambda m: m.group(1) + "(", source, flags=re.MULTILINE)
@@ -32,11 +43,12 @@ def preprocess_source(source):
         name = match.group(1)
         extends_part = match.group(2)
         if extends_part:
-            bases = ','.join([base.strip() for base in extends_part.split(',')])
+            bases = ', '.join(base.strip() for base in extends_part.split(','))
             return f"class {name}({bases}):\n    __is_interface__ = True"
         else:
             return f"class {name}:\n    __is_interface__ = True"
-    source = re.sub(r'^(?!\s*#)interface\s+(\w+)(?:\s+extends\s+([\w\s,]+))?\s*:', interface_repl, source, flags=re.MULTILINE)
+
+    source = re.sub(r'^\s*interface\s+(\w+)(?:\s+extends\s+([\w\s,]+))?:\s*', interface_repl, source, flags=re.MULTILINE)
 
     # Обработка implements: добавляем декораторы @implements(...)
     def implements_repl(match):
@@ -52,9 +64,12 @@ def preprocess_source(source):
     def enum_repl(match):
         enum_name = match.group(1)
         body = match.group(2)
+        
+        # Разбиваем тело на строки
         lines = body.splitlines()
         enum_lines = []
         value = 1
+        
         for line in lines:
             line = line.strip()
             if not line:
@@ -63,9 +78,12 @@ def preprocess_source(source):
                 line = line[:-1]
             enum_lines.append(f"    {line} = {value}")
             value += 1
+
         enum_body = "\n".join(enum_lines)
+        
         return f"from enum import Enum\nclass {enum_name}(Enum):\n{enum_body}"
-    source = re.sub(r'^(?!\s*#)enum\s+(\w+)\s*:\s*(.*?)\n(?=\S)', enum_repl, source, flags=re.DOTALL | re.MULTILINE)
+
+    source = re.sub(r'^\s*enum\s+(\w+):\s*\n((?:\s+.+\n*)+)', enum_repl, source, flags=re.MULTILINE)
 
     # Обработка приведения типов (assertion): "expr as Type" -> "__assert_type__(expr, Type)"
     source = re.sub(r'(?<!#)(\S+)\s+as\s+(\w+)', r'__assert_type__(\1, \2)', source)
@@ -79,17 +97,17 @@ def check_interface_methods(source):
     #проверка наличия тела методав  в интерфейсе
     lines = source.splitlines()
     for i, line in enumerate(lines):
-        # Если строка определяет интерфейс
-        m = re.match(r'^(?!\s*#)\s*class\s+(\w+)\s*(?:\([^)]*\))?:\s*$', line)
+        # Ищем объявления интерфейсов
+        m = re.match(r'^(?!\s*#)\s*(?:interface|class)\s+(\w+)\s*(?:\([^)]*\))?:\s*$', line)
         if m:
             interface_name = m.group(1)
+            # Если в следующих строках до конца блока найдём метод без тела – ошибка.
             j = i + 1
             while j < len(lines):
                 current_line = lines[j]
-                # Если пустая строка или строка с меньшим отступом — конец блока
-                if not current_line.strip() or (current_line and not current_line.startswith("    ")):
+                if not current_line.startswith("    "):
                     break
-                # Если строка определяет метод (начинается с def) и не содержит "pass" или не имеет хотя бы одной последующей строки с большим отступом
+                # Если строка определяет метод
                 method_match = re.match(r'^\s*def\s+(\w+)\(.*\):\s*$', current_line)
                 if method_match:
                     method_indent = len(re.match(r'^(\s*)', current_line).group(1))
