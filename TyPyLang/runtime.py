@@ -1,8 +1,8 @@
 import inspect
 from enum import Enum
-from typing import Optional  #have to realise
+from typing import Optional
 
-# Регистрация readonly-переменных (const)
+# Регистрация readonly-переменных
 readonly_registry = set()
 
 class ReadonlyDict(dict):
@@ -45,7 +45,16 @@ def type_checked(func):
         return result
     return wrapper
 
-import inspect
+# Собираем требования интерфейса (атрибуты и методы) с учётом наследования
+def gather_interface_requirements(interface):
+    req_attrs = {}
+    req_methods = {}
+    for base in interface.__mro__:
+        if getattr(base, '__is_interface__', False):
+            req_attrs.update(getattr(base, '__annotations__', {}))
+            for name, member in inspect.getmembers(base, predicate=inspect.isfunction):
+                req_methods[name] = member
+    return req_attrs, req_methods
 
 def implements(*interfaces):
     def decorator(cls):
@@ -54,20 +63,16 @@ def implements(*interfaces):
             raise TypeError(f"Класс {cls.__name__} должен иметь метод __init__ для проверки интерфейсов.")
 
         def new_init(self, *args, **kwargs):
-            # Вызываем оригинальный конструктор
             orig_init(self, *args, **kwargs)
-            # Проверяем каждый интерфейс
             for interface in interfaces:
-                required_attrs = getattr(interface, '__annotations__', {})
-                for attr in required_attrs:
+                req_attrs, req_methods = gather_interface_requirements(interface)
+                for attr in req_attrs:
                     if not hasattr(self, attr):
                         raise TypeError(
                             f"Объект класса {cls.__name__} не реализует требуемый атрибут '{attr}' интерфейса {interface.__name__}"
                         )
-                # Проверяем, что у экземпляра есть все методы, объявленные в интерфейсе
-                interface_methods = inspect.getmembers(interface, predicate=inspect.isfunction)
-                for name, method in interface_methods:
-                    if not hasattr(self, name) or not callable(getattr(self, name)):
+                for name in req_methods:
+                    if not (hasattr(self, name) and callable(getattr(self, name))):
                         raise TypeError(
                             f"Объект класса {cls.__name__} не реализует требуемый метод '{name}' интерфейса {interface.__name__}"
                         )

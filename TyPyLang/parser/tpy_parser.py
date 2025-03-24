@@ -1,14 +1,24 @@
 import ast
-
 from preprocessor import preprocess_source
 from transformer import TyPyTransformer
 
 def parse_source(source: str, filename: str = "<string>") -> ast.Module:
-    # Предобработка исходного кода для поддержки расширенного синтаксиса (удаление нового синтьаксиса)
     processed_source = preprocess_source(source)
-    # Парсинг в AST
-    tree = ast.parse(processed_source, filename=filename)
-    # Применяем трансформации для проверки типов и других преобразований
+    try:
+        #Парсинг в AST
+        tree = ast.parse(processed_source, filename=filename)
+    except SyntaxError as e:
+        # получить обработанный код по строкам
+        lines = processed_source.splitlines()
+        err_line = e.lineno or 0
+        # (2 строки до и 2 строки после) вернуть оибку
+        start = max(0, err_line - 3)
+        end = min(len(lines), err_line + 2)
+        context = "\n".join(f"{i+1:4}: {lines[i]}" for i in range(start, end))
+        # Поднимаем новую ошибку с дополнительной информацией
+        raise SyntaxError(
+            f"Ошибка компиляции в обработанном коде (файл {filename}, строка {err_line}):\n{context}"
+        ) from e
     transformer = TyPyTransformer()
     tree = transformer.visit(tree)
     ast.fix_missing_locations(tree)
