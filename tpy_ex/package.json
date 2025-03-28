@@ -6,8 +6,9 @@
   "engines": {
     "vscode": "^1.98.0"
   },
+  "icon": "./icon.jpg",
   "categories": [
-    "Programming Languages"
+    "Programming Languages", "Snippets"
   ],
   "contributes": {
     "languages": [{
@@ -20,6 +21,12 @@
       "language": "tpy",
       "scopeName": "source.tpy",
       "path": "./syntaxes/tpy.tmLanguage.json"
-    }]
+    }],
+    "snippets": [
+      {
+        "language": "tpy",
+        "path": "./snippets/snippets.code-snippets"
+      }
+    ]
   }
 }

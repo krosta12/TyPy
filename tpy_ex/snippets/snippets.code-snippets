@@ -1,0 +1,27 @@
+{
+    "Class initialization":{
+        "prefix": "class",
+        "body": ["class ${1:ClassName}(${2:parent}):","   def __init__(${3:self}):", "     ${4:pass}"],
+        "description": "Create a basic class sturcture"
+    },
+    "Interface initialization":{
+        "prefix": "interface",
+        "body": ["interface ${1:InterfaceName}:","   #code"],
+        "description": ""
+    },
+    "Implementation":{
+        "prefix": "implements",
+        "body": "implements ${1:InterfaceName}"
+    },
+    "Class with Implementation":{
+        "prefix": "cli",
+        "body": ["class ${1:ClassName}(${2:parent}), implements ${3:interfaceName}:","   def __init__(${4:self}):", "     ${5:pass}"],
+
+    },
+    "For loop": {
+        "prefix": "for",
+        "body": ["for ${1:item} in ${2:iterable}:", "    ${0:# code}"],
+        "description": "Standard for loop"
+    },
+    
+}
