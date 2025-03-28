@@ -1,0 +1,122 @@
+
+interface VoiceControllable:
+    def voiceCommand(self, command: str): pass
+
+interface WiFiConnectable:
+    def connectToWiFi(self, network: str): pass
+    def disconnectWiFi(self): pass
+
+interface Chargable:
+    def charge(self): pass
+    def getBatteryLevel(self) -> int: pass
+
+class Device:
+    model: str
+    isOn: bool
+
+    def __init__(self, model: str) -> None:
+        self.model = model
+        self.isOn = False
+
+    def displayInfo(self) -> None:
+        raise NotImplementedError("displayInfo() peab olema implementeeritud.")
+
+    def turnOn(self) -> None:
+        self.isOn = True
+        print(self.model, "turned on")
+
+    def turnOff(self) -> None:
+        self.isOn = False
+        print(self.model, "turned off")
+
+class SmartSpeaker(Device) implements VoiceControllable, WiFiConnectable:
+    def __init__(self, model: str) -> None:
+        super().__init__(model)
+        self.wifiConnected = False
+
+    def voiceCommand(self, command: str) -> None:
+        print("SmartSpeaker", self.model, "executing voice command:", command)
+
+    def connectToWiFi(self, network: str) -> None:
+        self.wifiConnected = True
+        print("SmartSpeaker", self.model, "connected to WiFi network:", network)
+
+    def disconnectWiFi(self) -> None:
+        self.wifiConnected = False
+        print("SmartSpeaker", self.model, "disconnected from WiFi")
+
+    def displayInfo(self) -> None:
+        print("Device: SmartSpeaker, Model:", self.model, ", Status:", "On" if self.isOn else "Off")
+
+class SmartLamp(Device) implements VoiceControllable, Chargable:
+    def __init__(self, model: str) -> None:
+        super().__init__(model)
+        self.battery = 100
+
+    def voiceCommand(self, command: str) -> None:
+        print("SmartLamp", self.model, "responding to voice command:", command)
+
+    def charge(self) -> None:
+        self.battery = 100
+        print("SmartLamp", self.model, "is now fully charged")
+
+    def getBatteryLevel(self) -> int:
+        return self.battery
+
+    def displayInfo(self) -> None:
+        print("Device: SmartLamp, Model:", self.model, ", Status:", "On" if self.isOn else "Off", ", Battery:", self.getBatteryLevel())
+
+class SmartDrone(Device) implements VoiceControllable, WiFiConnectable, Chargable:
+    def __init__(self, model: str) -> None:
+        super().__init__(model)
+        self.wifiConnected = False
+        self.battery = 100
+
+    def voiceCommand(self, command: str) -> None:
+        print("SmartDrone", self.model, "executing voice command:", command)
+
+    def connectToWiFi(self, network: str) -> None:
+        self.wifiConnected = True
+        print("SmartDrone", self.model, "connected to WiFi network:", network)
+
+    def disconnectWiFi(self) -> None:
+        self.wifiConnected = False
+        print("SmartDrone", self.model, "disconnected from WiFi")
+
+    def charge(self) -> None:
+        self.battery = 100
+        print("SmartDrone", self.model, "is now fully charged")
+
+    def getBatteryLevel(self) -> int:
+        return self.battery
+
+    def displayInfo(self) -> None:
+        print("Device: SmartDrone, Model:", self.model, ", Status:", "On" if self.isOn else "Off", ", Battery:", self.getBatteryLevel())
+
+def main():
+    devices = [
+        SmartSpeaker("Speaker-1"),
+        SmartLamp("Lamp-1"),
+        SmartDrone("Drone-1")
+    ]
+
+    for device in devices:
+        device.turnOn()
+        device.displayInfo()
+    
+    print("\n--- Interface Methods Demonstration ---\n")
+    for device in devices:
+        if hasattr(device, "voiceCommand"):
+            device.voiceCommand("Play your favorite song")
+        if hasattr(device, "connectToWiFi"):
+            device.connectToWiFi("HomeWiFi")
+            device.disconnectWiFi()
+        if hasattr(device, "charge"):
+            device.charge()
+            print("Battery level of", device.model, "is", device.getBatteryLevel())
+    
+    for device in devices:
+        device.turnOff()
+
+if __name__ == "__main__":
+    main()

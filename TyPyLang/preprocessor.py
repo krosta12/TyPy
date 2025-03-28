@@ -53,11 +53,10 @@ def preprocess_source(source):
         name = match.group(1)
         extends_part = match.group(2)
         if extends_part:
-            bases = ', '.join(base.strip() for base in extends_part.split(','))
-            return f"class {name}({bases}):\n    __is_interface__ = True"
+            bases = ','.join(base.strip() for base in extends_part.split(','))
+            return f"class {name}({bases}):\n    __is_interface__ = True\n"
         else:
-            return f"class {name}:\n    __is_interface__ = True"
-
+            return f"class {name}:\n    __is_interface__ = True\n"
     source = re.sub(r'^\s*interface\s+(\w+)(?:\s+extends\s+([\w\s,]+))?:\s*', interface_repl, source, flags=re.MULTILINE)
 
     """
@@ -66,14 +65,16 @@ def preprocess_source(source):
     def implements_repl(match):
         indent = match.group(1)
         class_name = match.group(2)
-        interfaces = match.group(3)
+        inheritance = match.group(3) if match.group(3) else ""
+        interfaces = match.group(4)
         interfaces_list = [iface.strip() for iface in interfaces.split(',')]
         decorators = "".join([f"{indent}@implements({iface})\n" for iface in interfaces_list])
-        return f"{decorators}{indent}class {class_name}:"
-    source = re.sub(r'^(?!\s*#)(\s*)class\s+(\w+)\s+implements\s+([\w\s,]+)\s*:', implements_repl, source, flags=re.MULTILINE)
-
-    """
-    Обработка перечислений (enum): преобразуем "enum Color:" в определение класса на базе Enum
+        return f"{decorators}{indent}class {class_name}{inheritance}:"
+    source = re.sub(r'^(?!\s*#)(\s*)class\s+(\w+)(\s*\([^)]*\))?\s+implements\s+([\w\s,]+)\s*:', 
+                    implements_repl, source, flags=re.MULTILINE)
+    
+    """ 
+    Обработка перечислений (enum): преобразуем "enum Color:" в определение класса на базе Enum 
     """
     def enum_repl(match):
         enum_name = match.group(1)
@@ -107,14 +108,17 @@ def preprocess_source(source):
     """Проверка корректности определения методов в интерфейсах"""
     source = check_interface_methods(source)
     
+    # фиксим табуляцию
+    source = fix_interface_body(source)
+    
     return source
 
 def check_interface_methods(source):
     #проверка наличия тела методав  в интерфейсе
     lines = source.splitlines()
     for i, line in enumerate(lines):
-        # Ищем объявления интерфейсов
-        m = re.match(r'^(?!\s*#)\s*(?:interface|class)\s+(\w+)\s*(?:\([^)]*\))?:\s*$', line)
+        # Ищем объявления классов, mis on liidesed (märkmed __is_interface__)
+        m = re.match(r'^(?!\s*#)\s*class\s+(\w+)(?:\s*\([^)]*\))?:\s*$', line)
         if m:
             interface_name = m.group(1)
             # Если в следующих строках до конца блока найдём метод без тела – ошибка.
@@ -132,3 +136,28 @@ def check_interface_methods(source):
                         raise SyntaxError(f"Интерфейс {interface_name}: метод {method_match.group(1)} не имеет тела. Проверьте отступы (например, добавьте 'pass').")
                 j += 1
     return "\n".join(lines)
+
+def fix_interface_body(source):
+    """
+    Функция исправляет отступы блока интерфейса
+    """
+    lines = source.splitlines()
+    new_lines = []
+    in_interface = False
+    for i, line in enumerate(lines):
+        if re.match(r'^\s*class\s+\w+\s*(?:\([^)]*\))?:\s*$', line):
+            new_lines.append(line)
+            in_interface = False
+        elif "__is_interface__" in line:
+            new_lines.append(line)
+            in_interface = True
+        elif in_interface:
+            if line.strip() != "":
+                new_lines.append("    " + line.lstrip())
+            else:
+                new_lines.append(line)
+            if i+1 < len(lines) and not lines[i+1].startswith("    "):
+                in_interface = False
+        else:
+            new_lines.append(line)
+    return "\n".join(new_lines)

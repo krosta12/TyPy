@@ -55,7 +55,7 @@ class TestPreprocessor(unittest.TestCase):
             def method(self): pass
         """
         processed = preprocess_source(source)
-        self.assertIn("class Child(Parent, Other):", processed)
+        self.assertIn("class Child(Parent,Other):", processed)
         self.assertIn("__is_interface__ = True", processed)
 
     def test_class_implements_interface(self):
