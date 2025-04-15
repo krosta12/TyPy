@@ -2,6 +2,9 @@ import inspect
 from enum import Enum
 from typing import Optional
 
+from strict_globals import StrictGlobals
+from access_controlled import Access_controlled
+
 # Регистрация readonly-переменных
 readonly_registry = set()
 

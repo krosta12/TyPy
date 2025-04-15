@@ -1,6 +1,7 @@
 import sys
 from typing import Optional
 import inspect
+from strict_globals import StrictGlobals
 
 
 from parser.tpy_parser import parse_source
@@ -35,7 +36,7 @@ def main():
     Создание окружения при помощи ReadonlyDict
     передача функций в окружение
     """
-    env = ReadonlyDict({
+    env = StrictGlobals({
         'type_checked': type_checked,
         '__type_check__': __type_check__,
         '__assert_type__': __assert_type__,
@@ -44,7 +45,7 @@ def main():
         'inspect': inspect,
         '__name__': '__main__',
         'Optional': Optional,
-    })
+})
 
     """запуск кастомного окружения"""
     exec(code, env)

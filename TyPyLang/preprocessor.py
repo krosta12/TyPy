@@ -1,6 +1,8 @@
 import re
 
 def preprocess_source(source):
+    """Teisendab TyPy laiendatud süntaksi tavalise Python-koodiks."""
+
     strict_present = bool(re.search(r'^(?!\s*#)\s*use strict\s*$', source, flags=re.MULTILINE))
     """
     Если встречается директива "use strict", удаляем
@@ -21,25 +23,29 @@ def preprocess_source(source):
     Удаляем параметры обобщений в определениях функций
     """
     source = re.sub(r'^(?!\s*#)(def\s+\w+)<[^>]+>\s*\(', lambda m: m.group(1) + "(", source, flags=re.MULTILINE)
+    source = re.sub(r'<[^>]+>', '', source)
+    source = re.sub(r':\s*[A-Z]\b', ': object', source)
+
     """
     Обработка type alias: преобразуем "type Alias = SomeType
     """
     source = re.sub(r'^(?!\s*#)\s*type\s+(\w+)\s*=\s*(.+)$', r'\1 = \2', source, flags=re.MULTILINE)
+
     """
-    Обработка optional: заменяем "variable?: Type" на "variable: Optional[Type]"
+    Обработка optional: заменяем "variable?: Type" на "variable: Optional[Type]
     """
-    source = re.sub(r'^(?!\s*#)(\w+)\?\s*:\s*([^\s=]+)', r'\1: Optional[\2]', source, flags=re.MULTILINE)
+    source = re.sub(r'^(?!\s*#)(\s*)(\w+)\?\s*:\s*([^\s=]+)', r'\1\2: Optional[\3]', source, flags=re.MULTILINE)
 
     """
     Обработка readonly-переменных: "readonly x: int = expr" => "x: int = __readonly_check__(...)"
     """
     source = re.sub(
         r'^(?!\s*#)\s*readonly\s+(\w+)\s*:\s*([^=]+)=\s*(.+)$',
-        lambda m: f"{m.group(1)}: {m.group(2)}= __readonly_check__(\"{m.group(1)}\", {m.group(3)}, {m.group(2).strip()})",
+        lambda m: f"{m.group(1)}: {m.group(2)} = __readonly_check__(\"{m.group(1)}\", {m.group(3)}, {m.group(2).strip()})",
         source, flags=re.MULTILINE
     )
 
-    """
+    """    
     Обработка модификаторов доступа (private, protected, public)
     """
     source = re.sub(r'^(?!\s*#)(\s*)private\s+(\w+)', lambda m: f"{m.group(1)}__{m.group(2)}", source, flags=re.MULTILINE)
@@ -70,12 +76,12 @@ def preprocess_source(source):
         interfaces_list = [iface.strip() for iface in interfaces.split(',')]
         decorators = "".join([f"{indent}@implements({iface})\n" for iface in interfaces_list])
         return f"{decorators}{indent}class {class_name}{inheritance}:"
-    source = re.sub(r'^(?!\s*#)(\s*)class\s+(\w+)(\s*\([^)]*\))?\s+implements\s+([\w\s,]+)\s*:', 
-                    implements_repl, source, flags=re.MULTILINE)
-    
-    """ 
-    Обработка перечислений (enum): преобразуем "enum Color:" в определение класса на базе Enum 
-    """
+    source = re.sub(
+        r'^(?!\s*#)(\s*)class\s+(\w+)(\s*\([^)]*\))?\s+implements\s+([\w\s,]+)\s*:',
+        implements_repl,
+        source, flags=re.MULTILINE
+    )
+
     def enum_repl(match):
         enum_name = match.group(1)
         body = match.group(2)
@@ -95,17 +101,17 @@ def preprocess_source(source):
             value += 1
 
         enum_body = "\n".join(enum_lines)
-        
-        return f"from enum import Enum\nclass {enum_name}(Enum):\n{enum_body}"
-
+        return f"from enum import Enum\nclass {enum_name}(Enum):\n{enum_body}\n"
     source = re.sub(r'^\s*enum\s+(\w+):\s*\n((?:\s+.+\n*)+)', enum_repl, source, flags=re.MULTILINE)
 
     """
     Обработка приведения типов (assertion): "expr as Type" -> "__assert_type__(expr, Type)"
     """
-    source = re.sub(r'(?<!#)(\S+)\s+as\s+(\w+)', r'__assert_type__(\1, \2)', source)
-    
-    """Проверка корректности определения методов в интерфейсах"""
+    source = re.sub(r'(?<!#)(\S+)\s+as\s+(\w+)\b(?!:)', r'__assert_type__(\1, \2)', source)
+
+    """
+    Проверка корректности определения методов в интерфейсах
+    """
     source = check_interface_methods(source)
     
     # фиксим табуляцию
@@ -145,7 +151,7 @@ def fix_interface_body(source):
     new_lines = []
     in_interface = False
     for i, line in enumerate(lines):
-        if re.match(r'^\s*class\s+\w+\s*(?:\([^)]*\))?:\s*$', line):
+        if re.match(r'^\s*class\s+\w+(?:\s*\([^)]*\))?:\s*$', line):
             new_lines.append(line)
             in_interface = False
         elif "__is_interface__" in line:
