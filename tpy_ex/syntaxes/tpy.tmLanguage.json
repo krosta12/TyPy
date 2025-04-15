@@ -7,7 +7,11 @@
     },
     {
       "name": "keyword.control.tpy",
-      "match": "\\b(interface|implements|readonly|enum|type)\\b"
+      "match": "\\b(interface|implements|readonly|enum|type|end)\\b"
+    },
+    {
+      "name": "keyword.operator.tpy",
+      "match": ":"
     }
   ],
   "repository": {}

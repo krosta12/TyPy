@@ -1,32 +1,60 @@
 {
   "name": "tpy",
   "displayName": "typy-lang",
-  "description": "Syntax highlighting for .tpy files",
-  "version": "0.0.1",
+  "description": "Extension pack for .tpy files",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.98.0"
   },
   "icon": "./icon.jpg",
   "categories": [
-    "Programming Languages", "Snippets"
+    "Programming Languages",
+    "Snippets"
+  ],
+  "activationEvents": [
+    "onLanguage:tpy"
   ],
   "contributes": {
-    "languages": [{
-      "id": "tpy",
-      "aliases": ["TyPy", "tpy"],
-      "extensions": [".tpy"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "tpy",
-      "scopeName": "source.tpy",
-      "path": "./syntaxes/tpy.tmLanguage.json"
-    }],
+    "languages": [
+      {
+        "id": "tpy",
+        "aliases": ["TyPy", "tpy"],
+        "extensions": [".tpy"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tpy",
+        "scopeName": "source.tpy",
+        "path": "./syntaxes/tpy.tmLanguage.json"
+      }
+    ],
     "snippets": [
       {
         "language": "tpy",
         "path": "./snippets/snippets.code-snippets"
       }
     ]
+  },
+  "main": "./out/extension.js",
+  "devDependencies": {
+    "@types/vscode": "^1.98.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
   }
 }
