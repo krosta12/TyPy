@@ -133,6 +133,9 @@ def preprocess_source(source):
                     value += 1
         
         enum_body = "\n".join(enum_lines)
+
+        enum_body += "\n    def __str__(self):\n        return str(self.value)"
+        enum_body += "\n    __repr__ = __str__"
         return f"from enum import Enum\nclass {enum_name}(Enum):\n{enum_body}\n"
 
     source = re.sub(r'^\s*enum\s+(\w+):\s*\n((?:\s+.+\n*)+)', enum_repl, source, flags=re.MULTILINE)
