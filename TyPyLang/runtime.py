@@ -1,6 +1,6 @@
 import inspect
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union, get_origin, get_args
 
 from strict_globals import StrictGlobals
 from access_controlled import Access_controlled
@@ -38,13 +38,35 @@ def type_checked(func):
         for name, value in bound_args.arguments.items():
             if name in annotations:
                 expected = annotations[name]
-                if not isinstance(value, expected):
+                # Проверка типа аргумента
+                if not isinstance(expected, type) and hasattr(expected, '__origin__'):
+                    # Обработка типов как Optional, Union, и т.д.
+                    origin = get_origin(expected)
+                    args_type = get_args(expected)
+                    if origin is Union:
+                        if not any(isinstance(value, arg) for arg in args_type):
+                            raise TypeError(f"Аргумент '{name}' должен быть {expected}, получен {type(value)}")
+                    elif origin and not isinstance(value, origin):
+                        raise TypeError(f"Аргумент '{name}' должен быть {expected}, получен {type(value)}")
+                elif isinstance(expected, type) and not isinstance(value, expected):
                     raise TypeError(f"Аргумент '{name}' должен быть {expected}, получен {type(value)}")
+
         result = func(*args, **kwargs)
         if 'return' in annotations and annotations['return'] is not None:
             expected = annotations['return']
-            if not isinstance(result, expected):
+            # Проверка возвращаемого значения
+            if not isinstance(expected, type) and hasattr(expected, '__origin__'):
+                # Обработка типов как Optional, Union, и т.д.
+                origin = get_origin(expected)
+                args_type = get_args(expected)
+                if origin is Union:
+                    if not any(isinstance(result, arg) for arg in args_type):
+                        raise TypeError(f"Функция должна возвращать {expected}, получен {type(result)}")
+                elif origin and not isinstance(result, origin):
+                    raise TypeError(f"Функция должна возвращать {expected}, получен {type(result)}")
+            elif isinstance(expected, type) and not isinstance(result, expected):
                 raise TypeError(f"Функция должна возвращать {expected}, получен {type(result)}")
+
         return result
     return wrapper
 
@@ -58,15 +80,13 @@ def gather_interface_requirements(interface):
         if getattr(base, '__is_interface__', False):
             req_attrs.update(getattr(base, '__annotations__', {}))
             for name, member in inspect.getmembers(base, predicate=inspect.isfunction):
-                req_methods[name] = member
+                if name != '__init__':
+                    req_methods[name] = member
     return req_attrs, req_methods
 
 def implements(*interfaces):
     def decorator(cls):
-        orig_init = getattr(cls, '__init__', None)
-        if not orig_init:
-            raise TypeError(f"Класс {cls.__name__} должен иметь метод __init__ для проверки интерфейсов.")
-
+        orig_init = cls.__init__ 
         def new_init(self, *args, **kwargs):
             orig_init(self, *args, **kwargs)
             for interface in interfaces:
@@ -84,3 +104,5 @@ def implements(*interfaces):
         cls.__init__ = new_init
         return cls
     return decorator
+
+
