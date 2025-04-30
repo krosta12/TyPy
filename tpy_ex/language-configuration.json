@@ -32,7 +32,7 @@
         "action": {
           "indent": "indent",
           "removeText": 0,
-          "appendText": "    "
+          //"appendText": "    "
         }
       }
     ]

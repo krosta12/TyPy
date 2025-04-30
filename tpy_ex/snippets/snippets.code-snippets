@@ -7,21 +7,70 @@
     "Interface initialization":{
         "prefix": "interface",
         "body": ["interface ${1:InterfaceName}:","   #code"],
-        "description": ""
+        "description": "Initialize a basic interface structure"
     },
     "Implementation":{
         "prefix": "implements",
-        "body": "implements ${1:InterfaceName}"
+        "body": "implements ${1:InterfaceName}",
+        "description": "Implement an interface"
     },
     "Class with Implementation":{
         "prefix": "cli",
-        "body": ["class ${1:ClassName}(${2:parent}), implements ${3:interfaceName}:","   def __init__(${4:self}):", "     ${5:pass}"],
-
+        "body": ["class ${1:ClassName}(${2:parent}) implements ${3:interfaceName}:","   def __init__(${4:self}):", "     ${5:pass}"],
+        "description": "Create a class with implementation of an interface"
     },
     "For loop": {
         "prefix": "for",
         "body": ["for ${1:item} in ${2:iterable}:", "    ${0:# code}"],
         "description": "Standard for loop"
     },
+    "Type Alias": {
+      "prefix": "type",
+      "body": ["type ${1:AliasName} = ${2:Type}"],
+      "description": "Create a type alias"
+    },
+    "Optional Field": {
+      "prefix": "optional",
+      "body": "${1:field}?: ${2:type}",
+      "description": "Create an optional field"
+    },
+    "Readonly Variable": {
+      "prefix": "readonly",
+      "body": "readonly ${1:type} ${2:variable}: ${3:type}",
+      "description": "Create a readonly variable"
+    },
+    "Type Assertion": {
+      "prefix": "as",
+      "body": "${1:value} as ${2:type}",
+      "description": "Type assertion"
+    },
+    "Generic Function": {
+      "prefix": "generic",
+      "body": [
+        "def ${1:functionName}<${2:T}>(${3:value}: ${2}):",
+        "    return ${3:value}"
+      ],
+      "description": "Create a generic function"
+    },
+    "Enum": {
+      "prefix": "enum",
+      "body": [
+        "enum ${1:EnumName}:",
+        "    ${2:Option1}",
+        "    ${3:Option2}"
+      ],
+      "description": "Create an enum"
+    }
+      
+
+      
+      
+
+      
+      
+
+
+
+      
     
 }

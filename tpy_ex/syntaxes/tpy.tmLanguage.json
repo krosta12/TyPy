@@ -2,17 +2,37 @@
   "scopeName": "source.tpy",
   "name": "TyPy",
   "patterns": [
-    {
-      "include": "source.python"
-    },
-    {
-      "name": "keyword.control.tpy",
-      "match": "\\b(interface|implements|readonly|enum|type|end)\\b"
-    },
-    {
-      "name": "keyword.operator.tpy",
-      "match": ":"
-    }
+    { "include": "#typy-keywords" },
+    { "include": "#symbols" },
+    { "include": "#python-grammar" }
   ],
-  "repository": {}
+  "repository": {
+    "typy-keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.tpy",
+          "match": "\\b(interface|implements|readonly|enum|type|end|public|protected|private)\\b"
+        }
+      ]
+    },
+    "symbols": {
+      "patterns": [
+        {
+          "name": "storage.type.generic.tpy",
+          "match": "<\\s*[A-Za-z_][A-Za-z0-9_]*(\\s*,\\s*[A-Za-z_][A-Za-z0-9_]*)*\\s*>"
+        },
+        {
+          "name": "keyword.operator.arrow.tpy",
+          "match": "->"
+        },
+        {
+          "name": "keyword.operator.optional.tpy",
+          "match": "\\?"
+        }
+      ]
+    },
+    "python-grammar": {
+      "include": "source.python"
+    }
+  }
 }

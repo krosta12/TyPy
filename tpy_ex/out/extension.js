@@ -36,11 +36,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.activate = activate;
 const vscode = __importStar(require("vscode"));
 function activate(context) {
-    vscode.languages.registerOnTypeFormattingEditProvider('TyPy', {
+    vscode.languages.registerOnTypeFormattingEditProvider('tpy', {
         provideOnTypeFormattingEdits(document, position, ch, options) {
             if (ch === ':') {
                 const line = document.lineAt(position.line);
-                const indent = '    '; // 4 пробела или "\t" для табов
+                const indent = 'e'; // 4 пробела или "\t" для табов
                 return [vscode.TextEdit.insert(line.range.end, `\n${indent}`)];
             }
             return [];
