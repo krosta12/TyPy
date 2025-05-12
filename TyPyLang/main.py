@@ -10,9 +10,8 @@ from preprocessor import preprocess_generic_functions, preprocess_source
 from runtime import readonly_registry
 from runtime import (
     type_checked, __type_check__, __assert_type__, __readonly_check__,
-    implements, ReadonlyDict, Access_controlled
+    implements, Access_controlled
 )
-    
 """Главный исполнитель преобразования и запуска кода"""
 
 def main():
@@ -40,8 +39,7 @@ def main():
     Создание окружения при помощи ReadonlyDict
     передача функций в окружение
     """
-    env = StrictGlobals(
-    {
+    env = StrictGlobals({
         'type_checked': type_checked,
         '__type_check__': __type_check__,
         '__assert_type__': __assert_type__,
@@ -55,9 +53,7 @@ def main():
         'get_origin': get_origin,
         'get_args': get_args,
         'Enum': Enum,
-    },
-    readonly_registry=readonly_registry
-)
+    }, readonly_registry=readonly_registry)
 
     exec(code, env)
 

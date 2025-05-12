@@ -3,6 +3,12 @@ import re
 def preprocess_source(source):
     """Teisendab TyPy laiendatud süntaksi tavalise Python-koodiks."""
 
+    readonly_names = re.findall(
+            r'^[ \t]*readonly[ \t]+([A-Za-z_]\w*)[ \t]*:', 
+            source, 
+            flags=re.MULTILINE
+        )
+
     """Обрабатываем код с директивой 'use strict'"""
     strict_present = bool(re.search(r'^(?!\s*#)\s*use strict\s*$', source, flags=re.MULTILINE))
     
@@ -53,9 +59,14 @@ def preprocess_source(source):
     Обработка readonly-переменных: "readonly x: int = expr" => "x: int = __readonly_check__(...)"
     """
     source = re.sub(
-        r'^(?!\s*#)\s*readonly\s+(\w+)\s*:\s*([^=]+)=\s*(.+)$',
-        lambda m: f"{m.group(1)}: {m.group(2)} = __readonly_check__(\"{m.group(1)}\", {m.group(3)}, {m.group(2).strip()})",
-        source, flags=re.MULTILINE
+        r'^[ \t]*readonly[ \t]+(\w+)[ \t]*:[ \t]*([^=\n]+?)'
+        r'(?:=[ \t]*([^\n#]+))?(?:#.*)?$',
+        lambda m: (
+            f"{m.group(1)}: {m.group(2).strip()} = "
+            f"__readonly_check__('{m.group(1)}', {m.group(3).strip() if m.group(3) else 'None'}, {m.group(2).strip()})"
+        ),
+        source,
+        flags=re.MULTILINE
     )
 
     """    
@@ -170,6 +181,19 @@ def preprocess_source(source):
     
     # фиксим табуляцию
     source = fix_interface_body(source)
+
+    for name in readonly_names:
+        pattern = rf'^(?!\s*#)(?!\s*readonly\s+){name}\s*[:=]'
+        matches = list(re.finditer(pattern, source, flags=re.MULTILINE))
+        if len(matches) > 1:
+            # вычисляем номер строки второго совпадения
+            second = matches[1]
+            lineno = source.count('\n', 0, second.start()) + 1
+            raise SyntaxError(
+                f"Попытка переопределить readonly-переменную '{name}' "
+                f"в строке {lineno}"
+            )
+
     
     return source
 

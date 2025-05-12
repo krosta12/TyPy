@@ -11,7 +11,7 @@ readonly_registry = set()
 class ReadonlyDict(dict):
     def __setitem__(self, key, value):
         if key in readonly_registry and key in self:
-            raise TypeError(f"Нельзя изменить значение readonly-переменной '{key}'")
+            raise TypeError(f"Нельзя изменить значение readonly‑переменной '{key}'")
         super().__setitem__(key, value)
 
 def __assert_type__(value, expected_type):
@@ -25,9 +25,10 @@ def __type_check__(name, value, expected_type):
     return value
 
 def __readonly_check__(name, value, expected_type):
-    value = __type_check__(name, value, expected_type)
+    if name in readonly_registry:
+        raise TypeError(f"Переменная '{name}' уже объявлена как readonly.")
     readonly_registry.add(name)
-    return value
+    return __type_check__(name, value, expected_type)
 
 def type_checked(func):
     def wrapper(*args, **kwargs):

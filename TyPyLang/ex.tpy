@@ -1,0 +1,5 @@
+readonly x: float = 3.14
+print(x)
+
+
+d = 3
