@@ -26,7 +26,30 @@ def parse_source(source: str, filename: str = "<string>") -> ast.Module:
         raise SyntaxError(
             f"Ошибка компиляции в обработанном коде (файл {filename}, строка {err_line}):\n{context}"
         ) from e
+    check_return_statements(tree)
     transformer = TyPyTransformer()
     tree = transformer.visit(tree)
     ast.fix_missing_locations(tree)
     return tree
+
+
+def check_return_statements(tree: ast.AST):
+    """
+    Проходит по всем FunctionDef и, если у фукции есть анотация return любого типа джыннх (проверить кастомные типы),
+    проверяет, что внутри есть хотя бы один return с выражением НУЖНОГО типа данных.
+    Иначе — бросает SyntaxError (Создать свой EXCEPTION тип).
+    """
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.returns is not None:
+            has_good_return = False
+            for sub in ast.walk(node):
+                if isinstance(sub, ast.Return) and sub.value is not None:
+                    has_good_return = True
+                    break
+            if not has_good_return:
+                raise SyntaxError(
+                    f"Функция '{node.name}' объявлена как возвращающая "
+                    f"{ast.unparse(node.returns)}, но в её теле нет ни одного "
+                    f"return с возвращаемым значением "
+                    f"(строка {node.lineno})."
+                )

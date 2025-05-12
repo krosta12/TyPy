@@ -2,5 +2,6 @@ use strict
 
 x: int = 1
 
-def hih() -> int:
-    print("1")
+def hih() -> str:
+    print("D")
+    return "s"
