@@ -1,5 +1,6 @@
-readonly x: float = 3.14
-print(x)
+use strict
 
+x: int = 1
 
-d = 3
+def hih() -> int:
+    print("1")

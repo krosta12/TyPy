@@ -18,6 +18,39 @@ def preprocess_source(source):
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
     
     if strict_present:
+        lines = source.splitlines()
+        for idx, line in enumerate(lines, start=1):
+            if not line.strip() or line.lstrip().startswith('#'):
+                continue
+
+            m = re.match(r'^\s*def\s+(\w+)\((.*)\)\s*(?:->\s*([^:]+))?:', line)
+            if m:
+                name, args_part, ret_part = m.group(1), m.group(2), m.group(3)
+                for arg in [a.strip() for a in args_part.split(',') if a.strip()]:
+                    if ':' not in arg:
+                        raise SyntaxError(
+                            f"Strict mode: аргумент '{arg}' фукции '{name}' "
+                            f"должен быть анотирован (строка {idx})"
+                        )
+                if ret_part is None:
+                    raise SyntaxError(
+                        f"Strict mode: функция '{name}' должна иметь аннотацию возвращаемого типа "
+                        f"(строка {idx})"
+                    )
+                continue
+
+            if re.match(r'^\s*(class |import |from )', line) or line.lstrip().startswith('readonly '):
+                continue
+
+            if re.match(r'^\s*[A-Za-z_]\w*\s*:\s*[^=\s]+\s*=', line):
+                continue
+
+            if '=' in line:
+                raise SyntaxError(
+                    f"Strict mode: все присваивания должны быть аннотированы "
+                    f"(строка {idx}): {line.strip()}"
+                )
+
         source = "__strict_mode__ = True\n" + source
 
     """
@@ -186,7 +219,6 @@ def preprocess_source(source):
         pattern = rf'^(?!\s*#)(?!\s*readonly\s+){name}\s*[:=]'
         matches = list(re.finditer(pattern, source, flags=re.MULTILINE))
         if len(matches) > 1:
-            # вычисляем номер строки второго совпадения
             second = matches[1]
             lineno = source.count('\n', 0, second.start()) + 1
             raise SyntaxError(
