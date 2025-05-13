@@ -1,7 +1,19 @@
 use strict
 
-x: int = 1
+interface counter:
+   counter:int = None
 
-def hih() -> str:
-    print("D")
-    return "s"
+class ClassName() implements counter:
+    def __init__(self, counter:int) -> None:
+       self.counter:int = counter
+    def start(self) -> None:
+        while True:
+            option:str = input()
+            if option == "1":
+                self.counter +=1
+            else:
+                print("Counter:", self.counter)
+                break
+
+game:type = ClassName(0)
+game.start()

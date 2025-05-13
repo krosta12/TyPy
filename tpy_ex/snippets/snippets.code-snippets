@@ -36,7 +36,7 @@
     },
     "Readonly Variable": {
       "prefix": "readonly",
-      "body": "readonly ${1:type} ${2:variable}: ${3:type}",
+      "body": "readonly ${1:variable}: ${2:type}",
       "description": "Create a readonly variable"
     },
     "Type Assertion": {

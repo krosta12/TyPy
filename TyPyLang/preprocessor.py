@@ -1,4 +1,5 @@
 import re
+from typing import cast #experimental
 
 def preprocess_source(source):
     """Teisendab TyPy laiendatud süntaksi tavalise Python-koodiks."""
@@ -16,47 +17,71 @@ def preprocess_source(source):
     Если "use strict" найден, добавляем переменную __strict_mode__
     """
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
-    
     if strict_present:
         lines = source.splitlines()
         for idx, line in enumerate(lines, start=1):
-            if not line.strip() or line.lstrip().startswith('#'):
+            if not line.strip() or line.lstrip().startswith('#') \
+            or re.match(r'^\s*(class |import |from )', line) \
+            or line.lstrip().startswith('readonly '):
                 continue
 
-            m = re.match(r'^\s*def\s+(\w+)\((.*)\)\s*(?:->\s*([^:]+))?:', line)
+            m = re.match(r'^\s*def\s+(\w+)\s*\((.*)\)\s*(?:->\s*([^:]+))?:', line)
             if m:
-                name, args_part, ret_part = m.group(1), m.group(2), m.group(3)
+                func_name, args_part, ret_part = m.group(1), m.group(2), m.group(3)
                 for arg in [a.strip() for a in args_part.split(',') if a.strip()]:
+                    name, _, _ = arg.partition(':')
+                    name = name.strip()
+                    if name in ('self', 'cls'):
+                        continue
                     if ':' not in arg:
                         raise SyntaxError(
-                            f"Strict mode: аргумент '{arg}' фукции '{name}' "
-                            f"должен быть анотирован (строка {idx})"
+                            f"Strict mode: аргумент '{name}' функции '{func_name}' "
+                            f"(строка {idx}) должен быть аннотирован"
                         )
                 if ret_part is None:
                     raise SyntaxError(
-                        f"Strict mode: функция '{name}' должна иметь аннотацию возвращаемого типа "
-                        f"(строка {idx})"
+                        f"Strict mode: функция '{func_name}' (строка {idx}) "
+                        f"должна иметь аннотацию возвращаемого типа"
                     )
                 continue
 
-            if re.match(r'^\s*(class |import |from )', line) or line.lstrip().startswith('readonly '):
+            if re.search(r'==|!=|<=|>=|\+=|-=|\*=|/=', line):
+                continue
+            if re.match(r'^\s*(if|elif|while|for|assert)\b', line):
                 continue
 
-            if re.match(r'^\s*[A-Za-z_]\w*\s*:\s*[^=\s]+\s*=', line):
+            if re.match(r'^\s*[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*\s*:\s*[^=\s]+\s*=', line):
                 continue
-
             if '=' in line:
                 raise SyntaxError(
                     f"Strict mode: все присваивания должны быть аннотированы "
                     f"(строка {idx}): {line.strip()}"
                 )
 
-        source = "__strict_mode__ = True\n" + source
+    source = "__strict_mode__ = True\n" + source
 
     """
     Удаляем директиву "use strict" из исходного кода
     """
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
+
+
+    if ' as ' in source and 'cast(' not in source:
+        source = "from typing import cast\n" + source
+
+        source = re.sub(
+            r'^(?P<indent>\s*)return\s+(?P<expr>.+?)\s+as\s+(?P<type>[A-Za-z_]\w*)\b',
+            lambda m: f"{m.group('indent')}return cast({m.group('type')}, {m.group('expr')})",
+            source,
+            flags=re.MULTILINE
+        )
+
+        source = re.sub(
+            r'(?P<expr>\S(?:.*?\S)?)\s+as\s+(?P<type>[A-Za-z_]\w*)\b',
+            lambda m: f"cast({m.group('type')}, {m.group('expr')})",
+            source
+        )
+
 
     """
     Проверяем правильность структуры каждлого кстомного елемента
@@ -203,9 +228,13 @@ def preprocess_source(source):
     )
 
     """
-    Обработка приведения типов (assertion): "expr as Type" -> "__assert_type__(expr, Type)"
+    Обработка приведения типов (assertion): "expr as Type" -> "__assert_type__(expr, Type) походу это маскировка ошибок или доверие компилятора к работнику"
     """
-    source = re.sub(r'(?<!#)(\S+)\s+as\s+(\w+)\b(?!:)', r'__assert_type__(\1, \2)', source)
+    source = re.sub(
+        r'(?<!#)([^\s=][^#\n]*)\s+as\s+([A-Za-z_]\w*)\b',
+        r'cast(\2, \1)',
+        source
+    )
 
     """
     Проверка корректности определения методов в интерфейсах
