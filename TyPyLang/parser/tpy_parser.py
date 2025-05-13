@@ -41,12 +41,17 @@ def check_return_statements(tree: ast.AST):
     """
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and node.returns is not None:
+            if isinstance(node.returns, ast.Constant) and node.returns.value is None:
+                continue
+
             has_good_return = False
             for sub in ast.walk(node):
                 if isinstance(sub, ast.Return) and sub.value is not None:
                     has_good_return = True
                     break
+
             if not has_good_return:
+                ann = ast.unparse(node.returns)
                 raise SyntaxError(
                     f"Функция '{node.name}' объявлена как возвращающая "
                     f"{ast.unparse(node.returns)}, но в её теле нет ни одного "

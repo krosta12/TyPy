@@ -1,7 +1,7 @@
 use strict
 
 interface counter:
-   counter:int = None
+   counter:int = 0
 
 class ClassName() implements counter:
     def __init__(self, counter:int) -> None:
@@ -15,5 +15,7 @@ class ClassName() implements counter:
                 print("Counter:", self.counter)
                 break
 
-game:type = ClassName(0)
+game:auto = ClassName(0)
 game.start()
+
+int x = 0

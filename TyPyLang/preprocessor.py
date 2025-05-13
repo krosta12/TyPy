@@ -4,6 +4,19 @@ from typing import cast #experimental
 def preprocess_source(source):
     """Teisendab TyPy laiendatud süntaksi tavalise Python-koodiks."""
 
+
+    source = re.sub(r'''(?mx)^([ \t]*)([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*(?<![+\-*/=!<>])=(?![=+\-*/])\s*(.+)$''',
+        lambda m: f"{m.group(1)}{m.group(3)}: {m.group(2)} = {m.group(4)}",
+        source
+    )
+
+    source = re.sub(
+        rf'(^[ \t]*)([A-Za-z_]\w*)\s*:\s*auto\s*=\s*(.+ )$',
+        lambda m: f"{m.group(1)}{m.group(2)}: object = {m.group(3)}",
+        source,
+        flags=re.MULTILINE
+    )
+    
     readonly_names = re.findall(
             r'^[ \t]*readonly[ \t]+([A-Za-z_]\w*)[ \t]*:', 
             source, 
@@ -81,7 +94,6 @@ def preprocess_source(source):
             lambda m: f"cast({m.group('type')}, {m.group('expr')})",
             source
         )
-
 
     """
     Проверяем правильность структуры каждлого кстомного елемента
