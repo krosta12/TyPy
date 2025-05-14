@@ -5,12 +5,14 @@
 use strict
 
 interface PointMathFuncs:
-    def get_point_x_cord() -> None: pass
-    def get_point_y_cord() -> None: pass
+    def get_point_x_cord() -> float: pass
+    def get_point_y_cord() -> float: pass
 
 class Line implements PointMathFuncs:
     def __init__(self,x:float,y:float) -> None:
         self.x: float = x
         self.y: float = y
-        def get_point_x_cord() -> float:
-            return x
+    def get_point_x_cord() -> float:
+        return self.x
+
+c: auto = Line(1.0,2.0)

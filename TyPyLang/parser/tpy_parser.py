@@ -33,28 +33,51 @@ def parse_source(source: str, filename: str = "<string>") -> ast.Module:
     return tree
 
 
-def check_return_statements(tree: ast.AST):
-    """
-    Проходит по всем FunctionDef и, если у фукции есть анотация return любого типа джыннх (проверить кастомные типы),
-    проверяет, что внутри есть хотя бы один return с выражением НУЖНОГО типа данных.
-    Иначе — бросает SyntaxError (Создать свой EXCEPTION тип).
-    """
-    for node in ast.walk(tree):
-        if isinstance(node, ast.FunctionDef) and node.returns is not None:
-            if isinstance(node.returns, ast.Constant) and node.returns.value is None:
-                continue
+#java expirement with visitor patern
+def check_return_statements(tree):
+    class ReturnVisitor(ast.NodeVisitor):
+        def __init__(self):
+            self._iface_stack = [False]
+            super().__init__()
 
-            has_good_return = False
-            for sub in ast.walk(node):
-                if isinstance(sub, ast.Return) and sub.value is not None:
-                    has_good_return = True
-                    break
+        def visit_ClassDef(self, node: ast.ClassDef):
+            is_iface = any(
+                isinstance(stmt, ast.Assign) and
+                any(isinstance(t, ast.Name) and t.id == '__is_interface__'
+                    for t in stmt.targets)
+                for stmt in node.body
+            )
+            self._iface_stack.append(is_iface or self._iface_stack[-1])
+            for stmt in node.body:
+                self.visit(stmt)
+            self._iface_stack.pop()
 
-            if not has_good_return:
-                ann = ast.unparse(node.returns)
+        def visit_FunctionDef(self, node: ast.FunctionDef):
+            if self._iface_stack[-1]:
+                return
+
+            ann = node.returns
+            is_none_annot = (
+                ann is None
+                or (isinstance(ann, ast.Constant) and ann.value is None)
+                or (isinstance(ann, ast.Name)     and ann.id == 'None')
+            )
+            if is_none_annot:
+                return self.generic_visit(node)
+
+            found = any(
+                isinstance(sub, ast.Return) and sub.value is not None
+                for sub in ast.walk(node)
+            )
+            if not found:
+                lineno = node.lineno
+                name = node.name
                 raise SyntaxError(
-                    f"Функция '{node.name}' объявлена как возвращающая "
-                    f"{ast.unparse(node.returns)}, но в её теле нет ни одного "
-                    f"return с возвращаемым значением "
-                    f"(строка {node.lineno})."
+                    f"Функция '{name}' объявлена как возвращающая "
+                    f"{ast.unparse(ann)}, но в её теле нет ни одного "
+                    f"return с возвращаемым значением " 
+                    f"(строка {lineno})."
                 )
+            self.generic_visit(node)
+
+    ReturnVisitor().visit(tree)
