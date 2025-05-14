@@ -1,12 +1,38 @@
-#need to fix acces controller
-
-
 use strict
 
-class Point:
-    public x: int = 0
-    def __init__(self) -> None:
-        print(self.x)
+interface MathOperations:
+    def add<T1>(self, el1: T1) -> T1: pass
+    def sub<T1>(self, el1: T1) -> T1: pass
+    def mul<T1>(self, el1: T1) -> T1: pass
+
+class Vector() implements MathOperations:
+    def __init__(self, plist: list) -> None:
+        self.list: list = plist
+
+    def add<T1>(self, el1: T1) -> T1:
+        return Vector([self.list[i] + el1.list[i] for i in range(len(el1.list))])
+    def sub<T1>(self, el1: T1) -> T1:
+        return Vector([self.list[i] - el1.list[i] for i in range(len(el1.list))])
+    def mul<T1>(self, el1: T1) -> T1:
+        return Vector([self.list[i] * el1.list[i] for i in range(len(el1.list))])
+    
+    def get_length(self) -> float:
+        return sum([i ** 2 for i in self.list]) ** 0.5
+    
+    def __str__(self) -> str:
+        return f"Vector({self.list})"
+
+        
+h1:Vector = Vector([1, 2, 3])
+h2:Vector = Vector([4, 5, 6])
+
+h3:Vector = h1.add(h2)
+
+print(h1.get_length())
+
+print(h3.get_length())
 
 
-hih: auto = Point()
+print(h1)
+print(h2)
+print(h3)

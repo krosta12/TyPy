@@ -6,7 +6,7 @@
     },
     "Interface initialization":{
         "prefix": "interface",
-        "body": ["interface ${1:InterfaceName}:","   #code"],
+        "body": ["interface ${1:InterfaceName}:","    ${2:methodName}(${3:args}) -> ${4:returnType}","    ${5:pass}"],
         "description": "Initialize a basic interface structure"
     },
     "Implementation":{

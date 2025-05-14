@@ -11,10 +11,9 @@ def preprocess_source(source):
     )
 
     source = re.sub(
-        r'(^[ \t]*)([A-Za-z_]\w*)\s*:\s*auto\s*=\s*(.+)$',
-        lambda m: f"{m.group(1)}{m.group(2)}: object = {m.group(3)}",
-        source,
-        flags=re.MULTILINE
+        r'(\b[A-Za-z_]\w*)\s*:\s*auto\b',
+        r'\1: object',
+        source
     )
 
     
@@ -64,6 +63,9 @@ def preprocess_source(source):
             if re.search(r'==|!=|<=|>=|\+=|-=|\*=|/=', line):
                 continue
             if re.match(r'^\s*(if|elif|while|for|assert)\b', line):
+                continue
+
+            if re.match(r'^\s*[A-Za-z_]\w*\s*=\s*TypeVar\(', line):
                 continue
 
             if re.match(r'^\s*[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*\s*:\s*[^=\s]+\s*=', line):
