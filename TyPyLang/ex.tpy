@@ -1,5 +1,4 @@
 #need to fix acces controller
-#need to fix interface return statement
 
 
 use strict
@@ -12,7 +11,8 @@ class Line implements PointMathFuncs:
     def __init__(self,x:float,y:float) -> None:
         self.x: float = x
         self.y: float = y
-    def get_point_x_cord() -> float:
-        return self.x
+    def get_point_x_cord() -> None:
+        print(self.x)
+    def get_point_y_cord() -> None:
+        print(self.y)
 
-c: auto = Line(1.0,2.0)

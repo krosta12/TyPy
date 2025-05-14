@@ -11,11 +11,13 @@ def preprocess_source(source):
     )
 
     source = re.sub(
-        rf'(^[ \t]*)([A-Za-z_]\w*)\s*:\s*auto\s*=\s*(.+ )$',
+        r'(^[ \t]*)([A-Za-z_]\w*)\s*:\s*auto\s*=\s*(.+)$',
         lambda m: f"{m.group(1)}{m.group(2)}: object = {m.group(3)}",
         source,
         flags=re.MULTILINE
     )
+
+    
     
     readonly_names = re.findall(
             r'^[ \t]*readonly[ \t]+([A-Za-z_]\w*)[ \t]*:', 
