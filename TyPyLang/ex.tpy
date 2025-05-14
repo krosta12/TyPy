@@ -1,21 +1,15 @@
-use strict
+#use strict
 
-interface counter:
-   counter:int = 0
+class Point():
+    private hih
+    def __init__(self,x:int,y:int) -> None:
+     self.x:int = x
+     self.y:int = y
 
-class ClassName() implements counter:
-    def __init__(self, counter:int) -> None:
-       self.counter:int = counter
-    def start(self) -> None:
-        while True:
-            option:str = input()
-            if option == "1":
-                self.counter +=1
-            else:
-                print("Counter:", self.counter)
-                break
 
-game:auto = ClassName(0)
-game.start()
+ex1: Point = Point(1,2)
 
-int x = 0
+#print(ex1.x1)
+
+#need to fix acces controller
+#need to fix interface return statement
