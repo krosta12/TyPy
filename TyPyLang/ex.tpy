@@ -1,15 +1,10 @@
-#use strict
-
-class Point():
-    private hih
-    def __init__(self,x:int,y:int) -> None:
-     self.x:int = x
-     self.y:int = y
-
-
-ex1: Point = Point(1,2)
-
-#print(ex1.x1)
+use strict 
 
 #need to fix acces controller
 #need to fix interface return statement
+
+
+def say_hi(to: str) -> int:
+    return "hello " + to
+
+print(say_hi("jockii druce"))
