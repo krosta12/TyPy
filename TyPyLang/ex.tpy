@@ -3,16 +3,10 @@
 
 use strict
 
-interface PointMathFuncs:
-    def get_point_x_cord() -> float: pass
-    def get_point_y_cord() -> float: pass
-
-class Line implements PointMathFuncs:
-    def __init__(self,x:float,y:float) -> None:
-        self.x: float = x
-        self.y: float = y
-    def get_point_x_cord() -> None:
+class Point:
+    public x: int = 0
+    def __init__(self) -> None:
         print(self.x)
-    def get_point_y_cord() -> None:
-        print(self.y)
 
+
+hih: auto = Point()

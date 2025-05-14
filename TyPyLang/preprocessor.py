@@ -37,7 +37,8 @@ def preprocess_source(source):
         for idx, line in enumerate(lines, start=1):
             if not line.strip() or line.lstrip().startswith('#') \
             or re.match(r'^\s*(class |import |from )', line) \
-            or line.lstrip().startswith('readonly '):
+            or line.lstrip().startswith('readonly ') \
+            or re.match(r'^\s*(private|protected|public)\b', line):
                 continue
 
             m = re.match(r'^\s*def\s+(\w+)\s*\((.*)\)\s*(?:->\s*([^:]+))?:', line)
