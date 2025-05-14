@@ -93,6 +93,22 @@ interface Point:
     def väljasta_koordinaatid() -> None: pass
 ```
 ### IMPLEMENTS
+#### Vigane implementatsiooni näide
+```
+interface PointMathFuncs:
+    def get_point_x_cord() -> float: pass
+    def get_point_y_cord() -> float: pass
+
+class Line implements PointMathFuncs:
+    def __init__(self,x:float,y:float) -> None:
+        self.x: float = x
+        self.y: float = y
+        def get_point_x_cord() -> float:
+            return x
+        #viga!
+        #class Line ei realiseeri PointMathFuncs inteface
+```
+#### Õige näide
 ```
 use strict
 
@@ -101,14 +117,15 @@ interface PointMathFuncs:
     def get_point_y_cord() -> float: pass
 
 class Line implements PointMathFuncs:
-def __init__(self,x:float,y:float) -> None:
-    self.x: float = x
-    self.y: float = y
-    def get_point_x_cord() -> float:
-        return x
-    def get_point_y_cord() -> float:
-        return y
+    def __init__(self,x:float,y:float) -> None:
+        self.x: float = x
+        self.y: float = y
+        def get_point_x_cord() -> float:
+            return x
+        def get_point_y_cord() -> float:
+            return y
 ```
+
 
 ## ENUM
 ### On lisatud võtmesõna ```enum``` kahe konstruuktoriga
