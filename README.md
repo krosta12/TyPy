@@ -32,8 +32,8 @@ use strict
 def say_hi(to: str) -> None:
     print("hello " + to)
 ```
-###### Annotatioon ```str``` enne ```to``` nõuab seda, et funktsiooni argument oleks ainult ```str``` andmestruktuurina. 
-###### Annotation ```None``` pärast funktsiooni argumentide listi märastb mida pead kfunktsioon tagastama.  ```None``` on erijuht mis ei nõua ```return``` statementi. Kuid teised ```auto```, ```int```, ```str```... nõuvad ```return``` tapselt saamase andmetüüpiga.
+##### Annotatioon ```str``` enne ```to``` nõuab seda, et funktsiooni argument oleks ainult ```str``` andmestruktuurina. 
+##### Annotation ```None``` pärast funktsiooni argumentide listi märastb mida pead kfunktsioon tagastama.  ```None``` on erijuht mis ei nõua ```return``` statementi. Kuid teised ```auto```, ```int```, ```str```... nõuvad ```return``` tapselt saamase andmetüüpiga.
 
 #### Vigane funktsiooni keha ```return``` puudub
 ```
@@ -128,7 +128,7 @@ class Line implements PointMathFuncs:
 
 
 ## ENUM
-#### On lisatud võtmesõna ```enum``` kahe konstruuktoriga
+##### On lisatud võtmesõna ```enum``` kahe konstruuktoriga
 
 ```
 use strict
@@ -142,20 +142,20 @@ enum ex:
     two : int = 4
 ```
 
-#### Enum standartselt itereritatakse väärtusi järgi. Võimalik itereerida nagu "võtti" - "väärtusi"
+##### Enum standartselt itereritatakse väärtusi järgi. Võimalik itereerida nagu "võtti" - "väärtusi"
 ```
 for element in ex1:
     print(str(element.name) + ": " + str(element.value))
 ```
 
 ## TYPE ALIAS
-#### Laseb defineerida oma andmestruktuurid objekti baasil
+##### Laseb defineerida oma andmestruktuurid objekti baasil
 ```
 type my_int_type = int
 ```
 
 ## OPTIONAL
-#### optional muutujade süsteem kasutades võtmesõna ```?```. Kasutatakse muutujade defineerimiseks kus ei pea olema väärtust
+#### optional muutujade süsteem kasutades võtmesõna ```?```. Kasutatakse muutujade defineerimiseks kus ei pea olema väärtust.
 
 ## PRIVAATSUS
 ##### privaatsuse piirkonnad kasutades võtmesõnad - ```public```, ```protected```, ```private```. Saama reeglidega mis kasutatakse Javas või C-taolised P. keeled.
