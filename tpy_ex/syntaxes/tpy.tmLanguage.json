@@ -28,6 +28,10 @@
         {
           "name": "keyword.operator.optional.tpy",
           "match": "\\?"
+        },
+        {
+          "name": "keyword.mode.strict.tpy",
+          "match": "use strict"
         }
       ]
     },

@@ -34,12 +34,12 @@ def type_checked(func):
         sig = inspect.signature(func)
         bound_args = sig.bind(*args, **kwargs)
         bound_args.apply_defaults()
+        #argument type checking
         for name, value in bound_args.arguments.items():
             if name in annotations:
                 expected = annotations[name]
                 # argument type Checking
                 if not isinstance(expected, type) and hasattr(expected, '__origin__'):
-                    # Checking for Optional and Union types
                     origin = get_origin(expected)
                     args_type = get_args(expected)
                     if origin is Union:
@@ -51,6 +51,7 @@ def type_checked(func):
                     raise TypeError(f"Argument '{name}' must be {expected}, got a {type(value)}")
 
         result = func(*args, **kwargs)
+
         if 'return' in annotations and annotations['return'] is not None:
             expected = annotations['return']
             # Checking the return value
@@ -63,11 +64,32 @@ def type_checked(func):
                         raise TypeError(f"Function must return {expected}, got a {type(result)}")
                 elif origin and not isinstance(result, origin):
                     raise TypeError(f"Function must return {expected}, got a {type(result)}")
-            elif isinstance(expected, type) and not isinstance(result, expected):
-                raise TypeError(f"Function must return {expected}, got a {type(result)}")
+            # Plain class
+            elif isinstance(expected, type):
+                try:
+                    if not isinstance(result, expected):
+                        raise TypeError(f"Function must return {expected}, got a {type(result)}")
+                except TypeError as e:
+                    if hasattr(expected, '__total__'):
+                        if not isinstance(result, dict):
+                            raise TypeError(f"Function must return TypedDict {expected}, got a {type(result)}")
+                        for key, field_type in expected.__annotations__.items():
+                            if key not in result or not isinstance(result[key], field_type):
+                                raise TypeError(
+                                    f"Function returned TypedDict {expected} with wrong field '{key}': "
+                                    f"expected {field_type}, got {type(result.get(key, None))}"
+                                )
+                    else:
+                        # need to crteate smth
+                        raise
+            else:
+                origin = get_origin(expected)
+                if origin and not isinstance(result, origin):
+                    raise TypeError(f"Function must return {expected}, got a {type(result)}")
 
         return result
     return wrapper
+
 
 """
 Kogume liidese nõuded (atribuudid ja meetodid), arvestades pärimist

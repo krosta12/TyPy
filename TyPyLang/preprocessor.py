@@ -4,6 +4,7 @@ def preprocess_source(source):
     """Teisendab TyPy laiendatud süntaksi tavalise Python-koodiks."""
 
 
+
     source = re.sub(r'''(?mx)^([ \t]*)([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*(?<![+\-*/=!<>])=(?![=+\-*/])\s*(.+)$''',
         lambda m: f"{m.group(1)}{m.group(3)}: {m.group(2)} = {m.group(4)}",
         source
@@ -15,15 +16,15 @@ def preprocess_source(source):
         source
     )
 
-    
-    
     readonly_names = re.findall(
             r'^[ \t]*readonly[ \t]+([A-Za-z_]\w*)[ \t]*:', 
             source, 
             flags=re.MULTILINE
         )
 
-    """Töötle koodi direktiiviga 'use strict''"""
+    """
+    Töötle koodi direktiiviga 'use strict'
+    """
     strict_present = bool(re.search(r'^(?!\s*#)\s*use strict\s*$', source, flags=re.MULTILINE))
     
     """
@@ -31,13 +32,16 @@ def preprocess_source(source):
     """
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
     if strict_present:
+
         lines = source.splitlines()
+
         for idx, line in enumerate(lines, start=1):
+            
             if not line.strip() or line.lstrip().startswith('#') \
-            or re.match(r'^\s*(class |import |from )', line) \
-            or line.lstrip().startswith('readonly ') \
-            or re.match(r'^\s*(private|protected|public)\b', line):
-                continue
+                or re.match(r'^\s*(class |import |from )', line) \
+                or line.lstrip().startswith('readonly ') \
+                or re.match(r'^\s*(private|protected|public)\b', line):
+                    continue
 
             m = re.match(r'^\s*def\s+(\w+)\s*\((.*)\)\s*(?:->\s*([^:]+))?:', line)
             if m:
@@ -61,6 +65,7 @@ def preprocess_source(source):
 
             if re.search(r'==|!=|<=|>=|\+=|-=|\*=|/=', line):
                 continue
+
             if re.match(r'^\s*(if|elif|while|for|assert)\b', line):
                 continue
 
@@ -117,7 +122,31 @@ def preprocess_source(source):
     """
     Tüüpialiaside töötlus: teisendame "type Alias = SomeType"
     """
+
+    
     source = re.sub(r'^(?!\s*#)\s*type\s+(\w+)\s*=\s*(.+)$', r'\1 = \2', source, flags=re.MULTILINE)
+
+    if re.search(r'^\s*type\s+\w+\s*:\s*$', source, flags=re.MULTILINE):
+        source = "from typing import TypedDict\n" + source
+
+    def typedict_repl(match):
+        name = match.group(1)
+        body = match.group(2)
+        fields = []
+        for line in body.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            key, typ = [p.strip() for p in line.split(':', 1)]
+            fields.append(f"    {key}: {typ}")
+        return f"class {name}(TypedDict):\n" + "\n".join(fields) + "\n"
+
+    source = re.sub(
+        r'^\s*type\s+(\w+)\s*:\s*\n((?:\s+[A-Za-z_]\w*\s*:\s*[A-Za-z_]\w*\s*\n?)+)',
+        typedict_repl,
+        source,
+        flags=re.MULTILINE
+    )
 
     """
     Valikuliste parameetrite töötlus: "variable?: Type" → "variable: Optional[Type] = None"

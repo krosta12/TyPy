@@ -33,7 +33,6 @@ def parse_source(source: str, filename: str = "<string>") -> ast.Module:
     return tree
 
 
-#java expirement with visitor patern
 def check_return_statements(tree):
     class ReturnVisitor(ast.NodeVisitor):
         def __init__(self):

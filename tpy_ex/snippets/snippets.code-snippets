@@ -1,13 +1,13 @@
 {
     "Class initialization":{
         "prefix": "class",
-        "body": ["class ${1:ClassName}(${2:parent}):","   def __init__(${3:self}):", "     ${4:pass}"],
+        "body": ["class ${1:ClassName}(${2:parent}):","    def __init__(${3:self}):", "        ${4:pass}"],
         "description": "Create a basic class sturcture"
     },
 
     "Strict class initialization":{
         "prefix": "sclass",
-        "body": ["class ${1:ClassName}(${2:parent}):","   def __init__(${3:self}) -> None:", "     ${4:pass}"],
+        "body": ["class ${1:ClassName}(${2:parent}):","    def __init__(${3:self}) -> None:", "        ${4:pass}"],
         "description": "Create a basic class sturcture with use strict rules"
     },
 
@@ -26,7 +26,7 @@
 
     "Class with Implementation":{
         "prefix": "cli",
-        "body": ["class ${1:ClassName}(${2:parent}) implements ${3:interfaceName}:","   def __init__(${4:self}):", "        ${5:pass}"],
+        "body": ["class ${1:ClassName}(${2:parent}) implements ${3:interfaceName}:","    def __init__(${4:self}):", "        ${5:pass}"],
         "description": "Create a class with implementation of an interface"
     },
 
@@ -87,5 +87,11 @@
         "    ${3:Option2}"
       ],
       "description": "Create an enum"
+    },
+
+    "Use strict mode":{
+      "prefix": "use strict",
+      "body": ["use strict"],
+      "description": "Use strict mode"
     }
 }
