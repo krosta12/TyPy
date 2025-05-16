@@ -36,3 +36,5 @@ print(h3.get_length())
 print(h1)
 print(h2)
 print(h3)
+
+readonly x: int = 4

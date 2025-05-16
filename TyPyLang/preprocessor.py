@@ -24,11 +24,11 @@ def preprocess_source(source):
             flags=re.MULTILINE
         )
 
-    """Обрабатываем код с директивой 'use strict'"""
+    """Töötle koodi direktiiviga 'use strict''"""
     strict_present = bool(re.search(r'^(?!\s*#)\s*use strict\s*$', source, flags=re.MULTILINE))
     
     """
-    Если "use strict" найден, добавляем переменную __strict_mode__
+    Kui leitakse "use strict", lisame muutuja __strict_mode__
     """
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
     if strict_present:
@@ -50,13 +50,13 @@ def preprocess_source(source):
                         continue
                     if ':' not in arg:
                         raise SyntaxError(
-                            f"Strict mode: аргумент '{name}' функции '{func_name}' "
-                            f"(строка {idx}) должен быть аннотирован"
+                            f"Strict mode: argument '{name}' of funtion '{func_name}' "
+                            f"(line {idx}) must have annotation"
                         )
                 if ret_part is None:
                     raise SyntaxError(
-                        f"Strict mode: функция '{func_name}' (строка {idx}) "
-                        f"должна иметь аннотацию возвращаемого типа"
+                        f"Strict mode: function '{func_name}' (line {idx}) "
+                        f"must have anotation of returned data type"
                     )
                 continue
 
@@ -72,14 +72,14 @@ def preprocess_source(source):
                 continue
             if '=' in line:
                 raise SyntaxError(
-                    f"Strict mode: все присваивания должны быть аннотированы "
-                    f"(строка {idx}): {line.strip()}"
+                    f"Strict mode: all assignments must have a type annotation "
+                    f"(line {idx}): {line.strip()}"
                 )
 
     source = "__strict_mode__ = True\n" + source
 
     """
-    Удаляем директиву "use strict" из исходного кода
+    Eemaldame "use strict" direktiivi lähtekoodist
     """
     source = re.sub(r'^(?!\s*#)\s*use strict\s*$', '', source, flags=re.MULTILINE)
 
@@ -101,7 +101,7 @@ def preprocess_source(source):
         )
 
     """
-    Проверяем правильность структуры каждлого кстомного елемента
+    Kontrollime iga kohandatud elemendi struktuuri korrektsust
     """
     if re.search(r"interface\s+\w+\s+def", source):
         raise SyntaxError("Invalid interface declaration syntax")
@@ -109,19 +109,19 @@ def preprocess_source(source):
     if re.search(r"enum\s+\w+\s+\w+", source):
         raise SyntaxError("Invalid enum declaration syntax")
     """
-    Удаляем параметры обобщений в определениях функций
+    Eemaldame funktsiooni definitsioonidest generikumite parameetrid
     """
     source = re.sub(r'^(?!\s*#)(def\s+\w+)<[^>]+>\s*\(', lambda m: m.group(1) + "(", source, flags=re.MULTILINE)
     source = re.sub(r'<[^>]+>', '', source)
     source = re.sub(r':\s*[A-Z]\b', ': object', source)
 
     """
-    Обработка type alias: преобразуем "type Alias = SomeType
+    Tüüpialiaside töötlus: teisendame "type Alias = SomeType"
     """
     source = re.sub(r'^(?!\s*#)\s*type\s+(\w+)\s*=\s*(.+)$', r'\1 = \2', source, flags=re.MULTILINE)
 
     """
-    Обработка optional: "variable?: Type" => "variable: Optional[Type] = None"
+    Valikuliste parameetrite töötlus: "variable?: Type" → "variable: Optional[Type] = None"
     """
     source = re.sub(
         r'^(?!\s*#)(\s*)(\w+)\?\s*:\s*([^\s=]+)',
@@ -131,8 +131,9 @@ def preprocess_source(source):
     )
 
     """
-    Обработка readonly-переменных: "readonly x: int = expr" => "x: int = __readonly_check__(...)"
+    Teisendame kirjutuskaitstud muutujad: "readonly x: int = expr" → "x: int = __readonly_check__(...)"
     """
+
     source = re.sub(
         r'^[ \t]*readonly[ \t]+(\w+)[ \t]*:[ \t]*([^=\n]+?)'
         r'(?:=[ \t]*([^\n#]+))?(?:#.*)?$',
@@ -145,14 +146,14 @@ def preprocess_source(source):
     )
 
     """    
-    Обработка модификаторов доступа (private, protected, public)
+    Juurdepääsupiirangute töötlus (private, protected, public)
     """
     source = re.sub(r'^(?!\s*#)(\s*)private\s+(\w+)', lambda m: f"{m.group(1)}__{m.group(2)}", source, flags=re.MULTILINE)
     source = re.sub(r'^(?!\s*#)(\s*)protected\s+(\w+)', lambda m: f"{m.group(1)}_{m.group(2)}", source, flags=re.MULTILINE)
     source = re.sub(r'^(?!\s*#)(\s*)public\s+(\w+)', lambda m: f"{m.group(1)}{m.group(2)}", source, flags=re.MULTILINE)
 
     """
-    Обработка интерфейсов: заменяем "interface Name:" на определение класса с меткой __is_interface__
+    Liideste töötlus: asendame "interface Name:" klassi definitsiooniga märgiga __is_interface__
     """
     def interface_repl(match):
         name = match.group(1)
@@ -171,37 +172,37 @@ def preprocess_source(source):
     )
     
     """
-    Обработка enum: "enum Name: ... " -> "class Name(Enum): ..."
+    # Enumi töötlus: "enum Name: ..." → "class Name(Enum): ..."
     """
     def enum_repl(match):
         enum_name = match.group(1)
         body = match.group(2)
         
-        # разбиваем тело на строки
+        # split all body to independents strigns
         lines = [line.strip() for line in body.splitlines() if line.strip()]
         enum_lines = []
-        value = 0  # индексируем Енум
+        value = 0  # try to index all Enums
         
         for line in lines:
-            # проверяем, содержит ли строка запятые для линейного объявления
+            # check, is string contains commas for linear declaration
             if ',' in line:
-                # сплитим элементы через запятые
+                # use split with strip to remove spaces
                 elements = [elem.strip() for elem in line.split(',') if elem.strip()]
                 for elem in elements:
                     if '=' in elem:
-                        # обрабатываем явное значение
+                        # process explicit value
                         name_part, val_part = elem.split('=', 1)
                         name_part = name_part.strip()
                         val_part = val_part.strip()
                         enum_lines.append(f"    {name_part} = {val_part}")
-                        # обновляем значение для следующих элементов
+                        # update value for erach next elements
                         try:
                             value = int(val_part) + 1
                         except ValueError:
-                            # если значение не целое число, продолжим с текущего value
+                            # if value is not int, continue with current value
                             value += 1
                     else:
-                        # аавтозначение
+                        # autho increment value bu queue
                         enum_lines.append(f"    {elem} = {value}")
                         value += 1
             else:
@@ -227,7 +228,7 @@ def preprocess_source(source):
     source = re.sub(r'^\s*enum\s+(\w+):\s*\n((?:\s+.+\n*)+)', enum_repl, source, flags=re.MULTILINE)
 
     """
-    Обработка implements: добавляем декораторы @implements(...)
+    "Implements" töötlus: lisame dekorraatorid @implements(...)
     """
     def implements_repl(match):
         indent = match.group(1)
@@ -245,7 +246,7 @@ def preprocess_source(source):
     )
 
     """
-    Обработка приведения типов (assertion): "expr as Type" -> "__assert_type__(expr, Type) походу это маскировка ошибок или доверие компилятора к работнику"
+    Tüübiassertsiooni töötlus: "expr as Type" → "__assert_type__(expr, Type)"
     """
     source = re.sub(
         r'(?<!#)([^\s=][^#\n]*)\s+as\s+([A-Za-z_]\w*)\b',
@@ -254,11 +255,11 @@ def preprocess_source(source):
     )
 
     """
-    Проверка корректности определения методов в интерфейсах
+    Liideste meetodite definitsioonide korrektsuse kontroll
     """
     source = check_interface_methods(source)
     
-    # фиксим табуляцию
+    # fixing tabulations
     source = fix_interface_body(source)
 
     for name in readonly_names:
@@ -268,40 +269,40 @@ def preprocess_source(source):
             second = matches[1]
             lineno = source.count('\n', 0, second.start()) + 1
             raise SyntaxError(
-                f"Попытка переопределить readonly-переменную '{name}' "
-                f"в строке {lineno}"
+                f"Attempt to override a readonly variable '{name}' "
+                f"in line {lineno}"
             )
 
     
     return source
 
 def check_interface_methods(source):
-    #проверка наличия тела методав  в интерфейсе
+    # controll if methods in interface have body
     lines = source.splitlines()
     for i, line in enumerate(lines):
-        # Ищем объявления классов, mis on liidesed (märkmed __is_interface__)
+        # find class decloration with __is_interface__
         m = re.match(r'^(?!\s*#)\s*class\s+(\w+)(?:\s*\([^)]*\))?:\s*$', line)
         if m:
             interface_name = m.group(1)
-            # Если в следующих строках до конца блока найдём метод без тела – ошибка.
+            # If we find a method without body in the next lines until the end of the block - error.
             j = i + 1
             while j < len(lines):
                 current_line = lines[j]
                 if not current_line.startswith("    "):
                     break
-                # Если строка определяет метод
+                # If line defines a method
                 method_match = re.match(r'^\s*def\s+(\w+)\(.*\):\s*$', current_line)
                 if method_match:
                     method_indent = len(re.match(r'^(\s*)', current_line).group(1))
-                    # Если следующая строка отсутствует или имеет отступ не больше, чем у заголовка метода, считаем, что тело метода отсутствует
+                    # If the next line is empty or has an indent not greater than the method header, we consider that the method body is missing
                     if j + 1 >= len(lines) or (lines[j+1].strip() == '' or len(re.match(r'^(\s*)', lines[j+1]).group(1)) <= method_indent):
-                        raise SyntaxError(f"Интерфейс {interface_name}: метод {method_match.group(1)} не имеет тела. Проверьте отступы (например, добавьте 'pass').")
+                        raise SyntaxError(f"Interface {interface_name}: method {method_match.group(1)} haven't body. Check spaces (example, add 'pass').")
                 j += 1
     return "\n".join(lines)
 
 def fix_interface_body(source):
     """
-    Функция исправляет отступы блока интерфейса
+    Funktsioon korrigeerib liideseploki taaneteid
     """
     lines = source.splitlines()
     new_lines = []
@@ -326,8 +327,7 @@ def fix_interface_body(source):
 
 def preprocess_generic_functions(source: str) -> str:
     """
-    Обработка функций с дженериками: def identity<T>(v: T) -> T
-    превращаем в нормальный Python код с TypeVar
+    Geneeriliste funktsioonide töötlus: def identity<T>(v: T) -> T → teisendame Pythoni TypeVar-kujule."
     """
     pattern = r"def\s+(\w+)<([\w,\s]+)>\s*\("
     
@@ -342,18 +342,18 @@ def preprocess_generic_functions(source: str) -> str:
 
         typevar_set.update(type_vars)
 
-        # деалем субстринг
+        # use substrings to build new source code
         new_source_lines.append(source[last_pos:start])
-        # правильный def без <T>
+        # corretion of function definition without generics
         new_source_lines.append(f"def {func_name}(")
         last_pos = end
 
-    # остаток кода
+    # the second part of the source code
     new_source_lines.append(source[last_pos:])
 
     new_source = ''.join(new_source_lines)
 
-    # если найдены дженерики — вставляем в начало импорты
+    # if founds generics - insert them to the top of the file
     if typevar_set:
         insert_block = "from typing import TypeVar\n" + "".join(
             f"{name} = TypeVar('{name}')\n" for name in sorted(typevar_set)

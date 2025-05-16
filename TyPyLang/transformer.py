@@ -2,7 +2,7 @@ import ast
 
 class TyPyTransformer(ast.NodeTransformer):
     def visit_FunctionDef(self, node):
-        # Если функция имеет аннотации параметров type_checked
+        # If the function has parameter annotations type_checked
         has_annotation = (node.returns is not None) or any(arg.annotation is not None for arg in node.args.args)
         if has_annotation:
             decorator = ast.Name(id='type_checked', ctx=ast.Load())
@@ -11,7 +11,7 @@ class TyPyTransformer(ast.NodeTransformer):
         return node
 
     def visit_AnnAssign(self, node):
-        # Преобразуем присваивание с аннотацией
+        # Transform annotated assignment
         if node.value is not None and isinstance(node.target, ast.Name):
             var_name = node.target.id
             check_call = ast.Call(

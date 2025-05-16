@@ -5,5 +5,5 @@ class StrictGlobals(dict):
 
     def __setitem__(self, key, value):
         if key in self.readonly_registry:
-            raise TypeError(f"Переменная '{key}' объявлена как readonly и не может быть переопределена.")
+            raise TypeError(f"Variable '{key}' declared as readonly and can't be rewrited.")
         super().__setitem__(key, value)

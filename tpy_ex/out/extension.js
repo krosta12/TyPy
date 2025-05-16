@@ -40,7 +40,7 @@ function activate(context) {
         provideOnTypeFormattingEdits(document, position, ch, options) {
             if (ch === ':') {
                 const line = document.lineAt(position.line);
-                const indent = 'e'; // 4 пробела или "\t" для табов
+                const indent = 'e'; // 4 spaces or "\t" for tab
                 return [vscode.TextEdit.insert(line.range.end, `\n${indent}`)];
             }
             return [];

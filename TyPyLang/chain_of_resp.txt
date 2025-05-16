@@ -5,37 +5,53 @@
 │   └─┬─ Open file for reading as `var`
 │      └─┬─ Create AST tree from source with step into `parse_source`
 │         ├─┬─ Start parsing new syntax to old with step into `preprocess_source`
-│         │ └── Replace all syntax by the queue from `preprocess_source`
+│         │ ├── Convert TyPy syntax to Python:
+│         │ │   ├── Replace `variable?: Type` → `Optional[Type]`
+│         │ │   ├── Process `readonly` → `__readonly_check__()`
+│         │ │   ├── Convert `interface` → class with `__is_interface__`
+│         │ │   ├── Transform `enum` → Enum subclass
+│         │ │   ├── Handle `as` type casts → `cast()`
+│         │ │   └── Process generics → TypeVar
+│         │ └── Strict mode validation:
+│         │     ├── Check all assignments have type hints
+│         │     └── Verify function signature annotations
 │         └─┬─ Step out to `parse_source` from `preprocess_source` with new `var`
 │           └── Parse the entire tree using the AST library
-│               └── Perform standard AST permutations
+│               └─┬─ Perform AST transformations:
+│                 ├── Add @type_checked decorators
+│                 ├── Replace AnnAssign with type checks
+│                 └── Validate return statements
 │───────────────────────────────────────────────
 ├─┬─ Step out to `main` from `parse_source`
 │ └─┬─ Start compiling code with the `exec` flag
 │   └─┬─ Create runtime environment with step into `FILE` runtime (imports variables):
+│      ├─┬─ Environment setup:
+│      │ ├── StrictGlobals with readonly registry
+│      │ ├── Access_controlled decorator
+│      │ └── Enum base class support
 │      ├─┬─ `type_checked()`
-│      │ ├── Take all annotations from functions as a dictionary
-│      │ ├── Get the full signature of the function
-│      │ ├── Check if all arguments are provided
-│      │ └── Check if the function returns a value
-│      │─────────────────────────────────────────
-│      ├─┬─ `__type_check__()`
-│      │ └── Check the type of a variable
-│      │─────────────────────────────────────────
-│      ├─┬─ `__assert_type__()`
-│      │ └── Check the type of a variable (release after check)
-│      │─────────────────────────────────────────
-│      ├─┬─ `__readonly_check__()`
-│      │ ├── Use `__type_check__()` for validation
-│      │ └── Add variable to a set as `const`
-│      │─────────────────────────────────────────
+│      │ ├── Validate argument types
+│      │ ├── Check return type
+│      │ └── Handle generics and unions
 │      ├─┬─ `implements()`
-│      │ ├── Check if the parent class has an `__init__` method
-│      │ ├── Create a custom `__init__` method to replace the old one
-│      │ └── Check each interface to verify that all methods or variables are implemented
-│      │─────────────────────────────────────────
-│      ├── `inspect` (Standard library to extend from)
-│      ├── Set the main module name to `__main__`
-│      └── `Optional()` (Standard library to extend from)
+│      │ ├── Interface requirement gathering
+│      │ ├── Runtime implementation check
+│      │ └── Dynamic __init__ modification
+│      ├─┬─ AST Transformer:
+│      │ ├── TyPyTransformer logic
+│      │ └── Node replacement pipeline
+│      ├─┬─ Error handling:
+│      │ ├── SyntaxError for invalid interfaces
+│      │ ├── TypeError for readonly violations
+│      │ └── AttributeError for access control
+│      └─┬─ Special features:
+│         ├── Auto-casting system
+│         ├── Type assertion checks
+│         └── Registry for readonly vars
 │───────────────────────────────────────────────
 └─┬─ Run code with the new environment
+  ├── Execute transformed AST
+  └─┬─ Runtime checks:
+     ├── Access control validation
+     ├── Interface contract enforcement
+     └── Readonly variable protection

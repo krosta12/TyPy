@@ -3,28 +3,28 @@ from preprocessor import preprocess_source
 from transformer import TyPyTransformer
 
 def parse_source(source: str, filename: str = "<string>") -> ast.Module:
-    """Получение обработанного кода, потдерждиваемого .py компиляторами"""
+    """Töödeldud koodi genereerimine (.py kompilaatorile sobivaks)"""
     processed_source = preprocess_source(source)
     try:
-        """перевод кода в дерево AST"""
+        """Koodi teisendamine AST-puuks (abstraktseks süntaksipuuks)"""
         tree = ast.parse(processed_source, filename=filename)
     except SyntaxError as e:
         """
-        получить обработанный код по строкам
+        Saada töödeldud kood ridade kaupa
         """
         lines = processed_source.splitlines()
         err_line = e.lineno or 0
         """
-        (2 строки до и 2 строки после) вернуть ошибку
+        Tagasta viga koos kontekstiga (2 rida enne ja 2 rida pärast)
         """
         start = max(0, err_line - 3)
         end = min(len(lines), err_line + 2)
         context = "\n".join(f"{i+1:4}: {lines[i]}" for i in range(start, end))
         """
-        Поднимаем новую ошибку с дополнительной информацией
+        Tõsta uus viga lisainfoga (nt. "Vigane rida: {line}")
         """
         raise SyntaxError(
-            f"Ошибка компиляции в обработанном коде (файл {filename}, строка {err_line}):\n{context}"
+            f"Compilation error in processed code (file '{filename}', line {err_line}):\n{context}"
         ) from e
     check_return_statements(tree)
     transformer = TyPyTransformer()
@@ -73,10 +73,10 @@ def check_return_statements(tree):
                 lineno = node.lineno
                 name = node.name
                 raise SyntaxError(
-                    f"Функция '{name}' объявлена как возвращающая "
-                    f"{ast.unparse(ann)}, но в её теле нет ни одного "
-                    f"return с возвращаемым значением " 
-                    f"(строка {lineno})."
+                    f"Function '{name}' declared with a return statement "
+                    f"{ast.unparse(ann)}, but no return statement found in the function body "
+                    f"return with value" 
+                    f"(line {lineno})."
                 )
             self.generic_visit(node)
 
