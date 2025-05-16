@@ -153,6 +153,23 @@ for element in ex1:
 ```
 type my_int_type = int
 ```
+#### On ka võimalik defineerida kergerid andmestruktuurid
+```
+use strict
+
+type user:
+    userId: int
+    userName: str
+
+def make_user() -> user:
+    return {
+        "userId": 1,
+        "userName": "Alice",
+    }
+
+user: auto = make_user()
+print(user)
+```
 
 ## OPTIONAL
 #### optional muutujade süsteem kasutades võtmesõna ```?```. Kasutatakse muutujade defineerimiseks kus ei pea olema väärtust.
