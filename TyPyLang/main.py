@@ -6,12 +6,13 @@ from strict_globals import StrictGlobals
 
 
 from parser.tpy_parser import parse_source
-from preprocessor import preprocess_generic_functions, preprocess_source
-from runtime import readonly_registry
+from preprocessor import preprocess_generic_functions
 from runtime import (
-    type_checked, __type_check__, __assert_type__, __readonly_check__,
-    implements, Access_controlled
+    readonly_registry, type_checked, __type_check__, __assert_type__, __readonly_check__,
+    implements
 )
+
+from access_controlled import Access_controlled
 """Koodi teisendamise ja käivitamise peamine täitja"""
 
 def main():

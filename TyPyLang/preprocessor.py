@@ -1,5 +1,4 @@
 import re
-from typing import cast #experimental
 
 def preprocess_source(source):
     """Teisendab TyPy laiendatud süntaksi tavalise Python-koodiks."""

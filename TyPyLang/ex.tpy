@@ -37,4 +37,14 @@ print(h1)
 print(h2)
 print(h3)
 
-readonly x: int = 4
+#readonly x: int = 4
+
+
+
+
+enum EnumName:
+    Option1
+    Option2
+
+for i in EnumName:
+    print(i.name)

@@ -4,21 +4,38 @@
         "body": ["class ${1:ClassName}(${2:parent}):","   def __init__(${3:self}):", "     ${4:pass}"],
         "description": "Create a basic class sturcture"
     },
+
+    "Strict class initialization":{
+        "prefix": "sclass",
+        "body": ["class ${1:ClassName}(${2:parent}):","   def __init__(${3:self}) -> None:", "     ${4:pass}"],
+        "description": "Create a basic class sturcture with use strict rules"
+    },
+
     "Interface initialization":{
         "prefix": "interface",
-        "body": ["interface ${1:InterfaceName}:","    ${2:methodName}(${3:args}) -> ${4:returnType}","    ${5:pass}"],
+        "body": ["interface ${1:InterfaceName}:",
+        "    def ${2:methodName}(${3:args} : ${4:type}) -> ${5:returnType}: pass"],
         "description": "Initialize a basic interface structure"
     },
+
     "Implementation":{
         "prefix": "implements",
         "body": "implements ${1:InterfaceName}",
         "description": "Implement an interface"
     },
+
     "Class with Implementation":{
         "prefix": "cli",
-        "body": ["class ${1:ClassName}(${2:parent}) implements ${3:interfaceName}:","   def __init__(${4:self}):", "     ${5:pass}"],
+        "body": ["class ${1:ClassName}(${2:parent}) implements ${3:interfaceName}:","   def __init__(${4:self}):", "        ${5:pass}"],
         "description": "Create a class with implementation of an interface"
     },
+
+    "Stricted class with Implementation":{
+        "prefix": "scli",
+        "body": ["class ${1:ClassName}(${2:parent}) implements ${3:interfaceName}:","   def __init__(${4:self}) -> ${5: returnType}:", "        ${6:pass}"],
+        "description": "Create a class with implementation of an interface with use strict rules"
+    },
+
     "For loop": {
         "prefix": "for",
         "body": ["for ${1:item} in ${2:iterable}:", "    ${0:# code}"],
@@ -52,6 +69,16 @@
       ],
       "description": "Create a generic function"
     },
+
+    "Stricted Generic Function": {
+      "prefix": "sgeneric",
+      "body": [
+        "def ${1:functionName}<${2:T}>(${3:value}: ${2}) -> T:",
+        "    return ${3:value}"
+      ],
+      "description": "Create a generic function"
+    },
+
     "Enum": {
       "prefix": "enum",
       "body": [
@@ -61,16 +88,4 @@
       ],
       "description": "Create an enum"
     }
-      
-
-      
-      
-
-      
-      
-
-
-
-      
-    
 }
