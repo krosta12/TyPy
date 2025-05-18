@@ -7,6 +7,8 @@ def preprocess_source(source):
 
     for m in re.finditer(r'^[ \t]*(\w+)\s*:\s*[^=\n]+', source, flags=re.MULTILINE):
         declared.add(m.group(1))
+    for m in re.finditer(r'^[ \t]*(\w+)\?\s*:\s*[^=\n]+', source, flags=re.MULTILINE):
+        declared.add(m.group(1))
 
     source = re.sub(r'''(?mx)^([ \t]*)([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*(?<![+\-*/=!<>])=(?![=+\-*/])\s*(.+)$''',
         lambda m: f"{m.group(1)}{m.group(3)}: {m.group(2)} = {m.group(4)}",

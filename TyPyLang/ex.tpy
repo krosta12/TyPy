@@ -1,10 +1,2 @@
 use strict
 
-x: int = 3
-x = 2
-
-
-
-#x?: int
-#x = 2
-#print(x)
