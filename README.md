@@ -190,9 +190,11 @@ print(user)
 
 # VS Code extension
 ### Instaleerimine
-##### 1. Copeerida repository
-##### 2. Kasutades Drag&Drop system teha lahti kaust ```tpy_ex``` VS Code-is
-##### 3. Valjutada F5
+- ##### 1. Leidke extension nimega ```typy-lang```
+- ##### 2. Valjutage ```install``` nuppu
+- ##### 3. Kirjutage kood
+#### Või
+##### kasutage liide: https://marketplace.visualstudio.com/items?itemName=krosta12.tpy
 #
 ### Code lights
 ##### extension loob värvid uutele konstruktsioonitele
