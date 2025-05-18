@@ -1,5 +1,6 @@
 # WELCOME
 ##### Lihtne interpriteeruv prograamilise keelt Pythoni baasil
+<img src="https://github.com/krosta12/TyPy/blob/master/assets/logo.png" width="50%" />
 
 # KIRJELDUS
 ##### See projekt luuab uued konstruktsiooni pythonisse kasutades oma iterpretaator pythonisse. Projekt lisab best praktisi Type Scriptist ja Java-st.
