@@ -1,14 +1,10 @@
 use strict
 
-type user:
-    userId: int
-    userName: str
+x: int = 3
+x = 2
 
-def make_user() -> user:
-    return {
-        "userId": 1,
-        "userName": "Alice",
-    }
 
-user: auto = make_user()
-print(user)
+
+#x?: int
+#x = 2
+#print(x)

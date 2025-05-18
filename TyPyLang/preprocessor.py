@@ -72,7 +72,7 @@ def preprocess_source(source):
             if re.match(r'^\s*[A-Za-z_]\w*\s*=\s*TypeVar\(', line):
                 continue
 
-            if re.match(r'^\s*[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*\s*:\s*[^=\s]+\s*=', line):
+            if re.match(r'^\s*[A-Za-z_]\w*\??(?:\.[A-Za-z_]\w*)*\s*:\s*[^=\s]+\s*=', line):
                 continue
             if '=' in line:
                 raise SyntaxError(
@@ -152,7 +152,14 @@ def preprocess_source(source):
     Valikuliste parameetrite töötlus: "variable?: Type" → "variable: Optional[Type] = None"
     """
     source = re.sub(
-        r'^(?!\s*#)(\s*)(\w+)\?\s*:\s*([^\s=]+)',
+        r'^(?!\s*#)(\s*)(\w+)\?\s*:\s*([^\s=]+)\s*=\s*(.+)$',
+        r'\1\2: Optional[\3] = \4',
+        source,
+        flags=re.MULTILINE
+    )
+ 
+    source = re.sub(
+        r'^(?!\s*#)(\s*)(\w+)\?\s*:\s*([^\s=]+)\s*$',
         r'\1\2: Optional[\3] = None',
         source,
         flags=re.MULTILINE
