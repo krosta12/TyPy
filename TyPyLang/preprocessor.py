@@ -3,7 +3,10 @@ import re
 def preprocess_source(source):
     """Teisendab TyPy laiendatud süntaksi tavalise Python-koodiks."""
 
+    declared = set()
 
+    for m in re.finditer(r'^[ \t]*(\w+)\s*:\s*[^=\n]+', source, flags=re.MULTILINE):
+        declared.add(m.group(1))
 
     source = re.sub(r'''(?mx)^([ \t]*)([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*(?<![+\-*/=!<>])=(?![=+\-*/])\s*(.+)$''',
         lambda m: f"{m.group(1)}{m.group(3)}: {m.group(2)} = {m.group(4)}",
@@ -42,6 +45,10 @@ def preprocess_source(source):
                 or line.lstrip().startswith('readonly ') \
                 or re.match(r'^\s*(private|protected|public)\b', line):
                     continue
+            
+            m_simple = re.match(r'^\s*([A-Za-z_]\w*)\s*=\s*', line)
+            if m_simple and m_simple.group(1) in declared:
+                continue
 
             m = re.match(r'^\s*def\s+(\w+)\s*\((.*)\)\s*(?:->\s*([^:]+))?:', line)
             if m:
