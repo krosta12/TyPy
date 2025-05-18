@@ -1,1 +1,8 @@
-x = 3
+
+enum EnumName:
+    Option1
+    Option2
+
+for item in EnumName:
+    EnumName.item = 2
+    print(EnumName.item)
