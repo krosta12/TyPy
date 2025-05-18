@@ -10,7 +10,7 @@
 ##### ```use strict``` - instruktsioon mis nõuab kasutada muutujade ja funktsioonide annotatsioonid.
 ##### Kirjutatakse dokumendi algusel
 #### Kus reziim nõuab kasutada
-```
+```py
 x = 5 #tekkib viga
 int x = 5
 #või
@@ -20,13 +20,13 @@ x: int = 5
 
 ##### Saamaselt nagu muutujadega vaja teha annotatsioonid funktsiooni defineerimiseks
 #### Ilma ```use strict```
-```
+```py
 def say_hi(to):
     print("hello " + to)
 ```
 
 #### Kasutades ```use strict```
-```
+```py
 use strict
 
 def say_hi(to: str) -> None:
@@ -36,7 +36,7 @@ def say_hi(to: str) -> None:
 ##### Annotation ```None``` pärast funktsiooni argumentide listi märastb mida pead kfunktsioon tagastama.  ```None``` on erijuht mis ei nõua ```return``` statementi. Kuid teised ```auto```, ```int```, ```str```... nõuvad ```return``` tapselt saamase andmetüüpiga.
 
 #### Vigane funktsiooni keha ```return``` puudub
-```
+```py
 use strict
 
 def say_hi(to: str) -> str:
@@ -46,14 +46,14 @@ print(say_hi("jockii druce"))
 #tuleb 'none-return statement'
 ```
 #### Vigane annatatsiooni näide
-```
+```py
 def say_hi(to: str) -> int: # pidi int tagastama
     return "hello " + to # tagastame str
 
 print(say_hi("jockii druce")) #saame vigu
 ```
-#### Õige annatatsiooni kasutus
-```
+***Õige annatatsiooni kasutus***
+```py
 use strict
 
 def say_hi(to: str) -> str: #õige argumendi tüüp
@@ -67,7 +67,7 @@ print(say_hi("jockii druce"))
 #### Kuna Pythonis kõik andmestruktuurid on tuletatud object klaasist.
 
 ##### Siis oli lisatud ```auto``` võtmesõna mis teeb lihtsemaks annatatsioonide loomine.
-```
+```py
 x: Class_Name = Class_Name() #on raske
 x: auto = Class_Name() #lihtsam
 x: auto = server.get_rq("GET", "...")
@@ -75,18 +75,23 @@ x: auto = server.get_rq("GET", "...")
 
 ## READONLY
 #### Konstantiid võtmesõnaga ```readonly``` mis pärast defineerimist pole võimalik muuta või üledefineerida
-```
+**Süntaks**  
+```py
 readonly pi: float = 3.14
 pi = 3.143 # tuleb viga!
 ```
 
 ## AS
-#### ```as``` - vaja üle kirjutada
+##### ```as``` — tüübidüstoopia või tüübiassertsiooni operaator 
+#### TyPy võimaldab sõna `as` kasutada, et teha jooksvalt tüübiassertsioone ilma eraldi funktsiooni või dekoratsioonita:
+```py
+x = some_expr as TargetType
+```
 
 ## INTERFACE SYSTEM
 ### INTERFACE
 ##### Laseb kasutada võtmesõna ```interface``` muutujade ja funktsiooni nimide ette kirjutamiseks.
-```
+```py
 interface Point:
     x: int,
     y: int
@@ -94,7 +99,7 @@ interface Point:
 ```
 ### IMPLEMENTS
 ##### Vigane implementatsiooni näide
-```
+```py
 interface PointMathFuncs:
     def get_point_x_cord() -> float: pass
     def get_point_y_cord() -> float: pass
@@ -109,7 +114,7 @@ class Line implements PointMathFuncs:
         #class Line ei realiseeri PointMathFuncs inteface
 ```
 ##### Õige näide
-```
+```py
 use strict
 
 interface PointMathFuncs:
@@ -130,7 +135,7 @@ class Line implements PointMathFuncs:
 ## ENUM
 ##### On lisatud võtmesõna ```enum``` kahe konstruuktoriga
 
-```
+```py
 use strict
 
 enum ex1:
@@ -143,18 +148,18 @@ enum ex:
 ```
 
 ##### Enum standartselt itereritatakse väärtusi järgi. Võimalik itereerida nagu "võtti" - "väärtusi"
-```
+```py
 for element in ex1:
     print(str(element.name) + ": " + str(element.value))
 ```
 
 ## TYPE ALIAS
 ##### Laseb defineerida oma andmestruktuurid objekti baasil
-```
+```py
 type my_int_type = int
 ```
 #### On ka võimalik defineerida kergerid andmestruktuurid
-```
+```py
 use strict
 
 type user:
