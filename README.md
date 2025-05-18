@@ -1,4 +1,4 @@
-# WELCOME
+# TERE TULEMAST
 ##### Lihtne interpriteeruv prograamilise keelt Pythoni baasil
 
 # KIRJELDUS
@@ -186,3 +186,41 @@ print(user)
 ##### ```private```: pärast defineerimist, võimalik muutujad kutsuda kasutades ```__``` muutuja nime enne
 ##### ```protected```: pärast defineerimist, võimalik muutujad kutsuda kasutades ```_``` muutuja nime enne
 ##### ```public```: pärast defineerimist, kutsumine toimub standartse viisil
+
+# VS Code extension
+### Instaleerimine
+##### 1. Copeerida repository
+##### 2. Kasutades Drag&Drop system teha lahti kaust ```tpy_ex``` VS Code-is
+##### 3. Valjutada F5
+#
+### Code lights
+##### extension loob värvid uutele konstruktsioonitele
+#
+
+### Snippets
+#### Klassid
+- ##### **```class```** — loob klassi struktuuri
+- ##### **```sclass```** — loob klassi struktuuri, kasutades ```use strict``` reegleid
+- ##### **```cli```** - loob uue klassi struktuuri interface’i implementeerimisega
+- ##### **```scli```** -  loob uue klassi struktuuri interface’i implementeerimisega, kasutades ```use strict``` reegleid
+
+#### Interface'id ja nõuded
+- ##### **```interface```** - loob uue interface’i näite funktsiooniga
+- ##### **```implements```** - lisab klassile nõuded muutujate ja funktsioonide defineerimiseks
+
+#### Tsüklid ja kontroll
+- ##### **```for```** — loob for-tsükli
+- ##### **```as```** - runtime’is andmetüübi kontrollimine
+
+#### Tüübid ja modifikaatorid
+- ##### **```type```** - oma andmetüübi kiirdefineerimine
+- ##### **```optional```** -  võtmesõna muutujate loomiseks, kus ei pea väärtust olema
+- ##### **```readonly```** -  konstandi (muutmatu muutuja) loomine
+
+#### Generilised funktsioonid
+- ##### **```generic```** - loob generilise funktsiooni erinevate andmetüüpide argumentidega
+- ##### **```sgeneric```** -  loob generilise funktsiooni erinevate andmetüüpide argumentidega, kasutades ```use strict``` reegleid
+
+#### Teised
+- ##### **```enum```** - loob uue enumeratsiooni näite parameetritega
+- ##### **```use```** strict - lülitab sisse strict-mode’i
