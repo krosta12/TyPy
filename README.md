@@ -53,7 +53,7 @@ def say_hi(to: str) -> int: # pidi int tagastama
 
 print(say_hi("jockii druce")) #saame vigu
 ```
-***Õige annatatsiooni kasutus***
+#### Õige annatatsiooni kasutus
 ```py
 use strict
 
@@ -126,10 +126,10 @@ class Line implements PointMathFuncs:
     def __init__(self,x:float,y:float) -> None:
         self.x: float = x
         self.y: float = y
-        def get_point_x_cord() -> float:
-            return x
-        def get_point_y_cord() -> float:
-            return y
+    def get_point_x_cord() -> float:
+        return x
+    def get_point_y_cord() -> float:
+        return y
 ```
 
 
@@ -201,6 +201,28 @@ print(user)
 #
 
 ### Snippets
+
+| structuur | Shortcut |
+| --- | --- |
+| class | ```cl``` |
+| stricted class  | `scl` |
+| class interface`i implimeteerimisega | `cli` |
+| stricted class interface`i implimeteerimisega  | `scli` |
+| interface | `inter` |
+| implements | `imp` |
+| for | `for` |
+| as | `as` |
+| type | `type` |
+| optional | `opt` |
+| readonly | `reo` |
+| generic | `gen` |
+| stricted generic | `sgen` |
+| enum | `enum` |
+| use strict | `uss` |
+
+
+
+### Snippide kirjeldus
 #### Klassid
 - ##### **```class```** — loob klassi struktuuri
 - ##### **```sclass```** — loob klassi struktuuri, kasutades ```use strict``` reegleid
@@ -226,4 +248,6 @@ print(user)
 
 #### Teised
 - ##### **```enum```** - loob uue enumeratsiooni näite parameetritega
-- ##### **```use```** strict - lülitab sisse strict-mode’i
+- ##### **```use strict```** - lülitab sisse strict-mode’i
+
+
